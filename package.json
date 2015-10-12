@@ -1,0 +1,40 @@
+{
+  "name": "moan",
+  "version": "0.0.1",
+  "description": "Simple task-based JavaScript build system",
+  "keywords": [
+    "task",
+    "build",
+    "async",
+    "test",
+    "tool",
+    "make",
+    "cli"
+  ],
+  "homepage": "http://neocotic.com/moan",
+  "bugs": {
+    "url": "https://github.com/neocotic/moan/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Alasdair Mercer",
+    "email": "mercer.alasdair@gmail.com",
+    "url": "http://neocotic.com"
+  },
+  "main": "lib/moan.js",
+  "bin": {
+    "moan": "bin/moan"
+  },
+  "repository": "neocotic/moan.git",
+  "scripts": {
+    "test": "bin/moan test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=4.0"
+  },
+  "preferGlobal": true
+}

@@ -1,0 +1,6 @@
+{
+  "extend": "../.eslintrc",
+  "env": {
+    "mocha": true
+  }
+}

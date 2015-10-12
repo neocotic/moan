@@ -1,0 +1,9 @@
+test/
+.editorconfig
+.eslintrc
+.gitattributes
+.gitignore
+.npmignore
+.travis.yml
+*.md
+moan.js

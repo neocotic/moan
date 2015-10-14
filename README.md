@@ -12,13 +12,17 @@ Simple task-based JavaScript build system
 
 # TODO
 
-- [ ] Complete first draft main project (API and CLI)
-- [ ] Main API methods:
+- [ ] Complete first draft of main project
+- [x] Main API methods:
   - [x] `task`: declare a task
-  - [ ] `externalTask`: declare an external task (e.g. loaded from another file or module)
-  - [ ] `run`: runs specified task(s)
-  - [ ] `watch`: watch for file changes and execute task(s) or task function
+  - [x] `run`: runs specified task(s)
+  - [x] `isComplete`: checks if specified task has completed
+  - [x] `isFail`: checks if specified task failed to complete
   - [x] `names`: get task names
-  - [ ] `dependencies`: get names of dependencies for specified task
+  - [x] `dependencies`: get names of dependencies for specified task
+- [ ] CLI
+- [ ] Complete ESDoc coverage of code (incl. examples)
+- [ ] Complete moan build for moan
 - [ ] Add logging ability
 - [ ] Unit tests (with code coverage)
+- [ ] Add "watch" functionality later

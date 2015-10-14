@@ -27,14 +27,14 @@
   },
   "repository": "neocotic/moan.git",
   "scripts": {
-    "test": "bin/moan test"
+    "test": "node bin/moan test"
   },
   "dependencies": {},
   "devDependencies": {
+    "esdoc": "^0.4.0",
     "eslint": "^1.6.0"
   },
   "engines": {
     "node": ">=4.0"
-  },
-  "preferGlobal": true
+  }
 }

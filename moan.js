@@ -9,9 +9,20 @@
 
 'use strict'
 
+const ESDoc = require('esdoc/out/src/ESDoc')
+const publisher = require('esdoc/out/src/Publisher/publish')
 const eslint = require('eslint')
 
 const moan = require('./lib/moan')
+
+moan.task('docs', () => {
+  let config = {
+    source: 'lib',
+    destination: 'docs'
+  }
+
+  ESDoc.generate(config, publisher)
+})
 
 moan.task('lint', () => {
   let cli = new eslint.CLIEngine()

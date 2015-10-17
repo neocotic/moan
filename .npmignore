@@ -1,5 +1,6 @@
 test/
 .editorconfig
+.eslintignore
 .eslintrc
 .gitattributes
 .gitignore

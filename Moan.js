@@ -1,6 +1,6 @@
 /*
  * moan
- * http://neocotic.com/moan
+ * https://github.com/neocotic/moan
  *
  * Copyright (c) 2015 Alasdair Mercer
  * Licensed under the MIT license.
@@ -9,8 +9,6 @@
 
 'use strict'
 
-const ESDoc = require('esdoc/out/src/ESDoc')
-const publisher = require('esdoc/out/src/Publisher/publish')
 const eslint = require('eslint')
 const glob = require('glob')
 const Mocha = require('mocha')
@@ -19,15 +17,6 @@ const path = require('path')
 const moan = require('./lib/moan')
 
 moan.task('default', 'test')
-
-moan.task('docs', () => {
-  let config = {
-    source: 'lib',
-    destination: 'docs'
-  }
-
-  ESDoc.generate(config, publisher)
-})
 
 moan.task('lint', () => {
   let cli = new eslint.CLIEngine()

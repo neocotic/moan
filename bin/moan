@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-module.exports = require('../lib/cli')(process.argv)
+module.exports = require('../lib/cli').parse(process.argv)

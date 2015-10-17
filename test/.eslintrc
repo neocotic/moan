@@ -2,5 +2,8 @@
   "extend": "../.eslintrc",
   "env": {
     "mocha": true
+  },
+  "rules": {
+    "no-undefined": 0
   }
 }

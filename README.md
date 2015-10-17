@@ -20,10 +20,10 @@ Simple task-based JavaScript build system
   - [x] `failed`: checks if specified task failed to complete
   - [x] `names`: get task names
   - [x] `dependencies`: get names of dependencies for specified task
-- [ ] CLI
+- [x] CLI
 - [x] Complete ESDoc coverage of code (incl. examples)
-- [ ] Complete moan build for moan
-- [ ] Add logging ability
+- [x] Complete moan build for moan
+- [x] Add logging ability
 - [ ] Unit tests (with code coverage)
 - [ ] Add "fileSet" functionality
 - [ ] Add "watch" functionality

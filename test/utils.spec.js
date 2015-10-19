@@ -65,4 +65,46 @@ describe('Utils', () => {
       expect(Utils.asString(true)).to.be('true')
     })
   })
+
+  describe('.plural', () => {
+    context('when count is negative', () => {
+      it('should throw a RangeError', () => {
+        expect(Utils.plural).withArgs(-1).to.throwError((error) => {
+          expect(error).to.be.a(RangeError)
+        })
+      })
+    })
+
+    context('when count is zero', () => {
+      it('should return default pluralString', () => {
+        expect(Utils.plural(0)).to.be('s')
+      })
+
+      it('should return specified pluralString', () => {
+        expect(Utils.plural(0, 'foo')).to.be('foo')
+      })
+    })
+
+    context('when count is one', () => {
+      it('should return default singularString', () => {
+        expect(Utils.plural(1)).to.be('')
+      })
+
+      it('should return specified singularString', () => {
+        expect(Utils.plural(1, null, 'foo')).to.be('foo')
+      })
+    })
+
+    context('when count is more than one', () => {
+      it('should return default singularString', () => {
+        expect(Utils.plural(2)).to.be('s')
+        expect(Utils.plural(20)).to.be('s')
+      })
+
+      it('should return specified singularString', () => {
+        expect(Utils.plural(2, 'foo')).to.be('foo')
+        expect(Utils.plural(20, 'foo')).to.be('foo')
+      })
+    })
+  })
 })

@@ -9,57 +9,16 @@
 
 'use strict'
 
-const eslint = require('eslint')
-const glob = require('glob')
-const Mocha = require('mocha')
-const path = require('path')
-
 const moan = require('./lib/moan')
 
+moan.task('clean', require('./task/clean'))
+moan.task('coverage-html', 'instrument', require('./task/coverage-html'))
+moan.task('coverage-lcov', 'instrument', require('./task/coverage-lcov'))
+moan.task('coverage-travis', 'instrument', require('./task/coverage-travis'))
+moan.task('instrument', 'clean', require('./task/instrument'))
+moan.task('lint', require('./task/lint'))
+moan.task('unit-test', require('./task/unit-test'))
+
 moan.task('default', 'test')
-
-moan.task('lint', () => {
-  let cli = new eslint.CLIEngine()
-  let report = cli.executeOnFiles([ 'lib/', 'test/', 'Moan.js' ])
-
-  report.results.forEach((result) => {
-    let filePath = path.relative(process.cwd(), result.filePath)
-
-    moan.log.writeln(`Linting: ${filePath}`)
-
-    result.messages.forEach((message) => {
-      let output = `${filePath}: "${message.ruleId}" at line ${message.line} col ${message.column}: ${message.message}`
-
-      if (message.severity === 2) {
-        moan.log.error(output)
-      } else if (message.severity === 1) {
-        moan.log.warn(output)
-      }
-    })
-  })
-
-  if (report.errorCount > 0) {
-    throw new Error(`${report.errorCount} lint errors were found`)
-  }
-})
-
-moan.task('test', 'lint', () => {
-  let mocha = new Mocha()
-  let testFiles = glob.sync('test/**/*.spec.js')
-
-  testFiles.forEach((testFile) => {
-    moan.log.debug(`Adding file to test suite: ${path.relative(process.cwd(), testFile)}`)
-
-    mocha.addFile(testFile)
-  })
-
-  return new Promise((resolve, reject) => {
-    mocha.run((failures) => {
-      if (failures > 0) {
-        reject(new Error(`Failed to run ${failures} test${failures !== 1 ? 's' : ''}`))
-      } else {
-        resolve()
-      }
-    })
-  })
-})
+moan.task('coverage', [ 'coverage-html', 'coverage-lcov', 'coverage-travis' ])
+moan.task('test', [ 'lint', 'unit-test', 'coverage' ])

@@ -31,16 +31,30 @@
   "dependencies": {
     "chalk": "^1.1.1",
     "commander": "^2.9.0",
-    "findup-sync": "^0.3.0"
+    "findup-sync": "^0.3.0",
+    "moment": "^2.10.6",
+    "numeral": "^1.5.3",
+    "pkginfo": "^0.3.0"
   },
   "devDependencies": {
+    "del": "^2.0.2",
     "eslint": "^1.6.0",
     "expect.js": "^0.3.1",
-    "glob": "^5.0.15",
+    "globby": "^3.0.1",
+    "istanbul": "^0.4.0",
+    "mkdirp-promise": "^1.0.3",
     "mocha": "^2.3.3",
-    "sinon": "^1.17.1"
+    "mocha-lcov-reporter": "^1.0.0",
+    "ncp": "^2.0.0",
+    "sinon": "^1.17.1",
+    "travis-cov": "^0.2.5"
   },
   "engines": {
     "node": ">=4.0"
+  },
+  "config": {
+    "travis-cov": {
+      "threshold": 95
+    }
   }
 }

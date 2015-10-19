@@ -1,0 +1,6 @@
+{
+  "extend": "../.eslintrc",
+  "rules": {
+    "no-sync": 0
+  }
+}

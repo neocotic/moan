@@ -1,4 +1,6 @@
 coverage/
+html-report/
+lcov.info
 
 node_modules/
 *.log

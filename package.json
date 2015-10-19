@@ -26,6 +26,7 @@
   },
   "repository": "neocotic/moan.git",
   "scripts": {
+    "coveralls": "node bin/moan coveralls",
     "test": "node bin/moan test"
   },
   "dependencies": {
@@ -37,6 +38,7 @@
     "pkginfo": "^0.3.0"
   },
   "devDependencies": {
+    "coveralls": "^2.11.4",
     "del": "^2.0.2",
     "eslint": "^1.6.0",
     "expect.js": "^0.3.1",
@@ -44,6 +46,7 @@
     "istanbul": "^0.4.0",
     "mkdirp-promise": "^1.0.3",
     "mocha": "^2.3.3",
+    "mocha-istanbul": "^0.2.0",
     "mocha-lcov-reporter": "^1.0.0",
     "ncp": "^2.0.0",
     "sinon": "^1.17.1",
@@ -51,10 +54,5 @@
   },
   "engines": {
     "node": ">=4.0"
-  },
-  "config": {
-    "travis-cov": {
-      "threshold": 95
-    }
   }
 }

@@ -12,8 +12,11 @@
 const MochaRunner = require('./helper/mocha-runner')
 
 module.exports = () => {
+  process.env.ISTANBUL_REPORT_DIR = 'coverage'
+  process.env.ISTANBUL_REPORTERS = [ 'text-summary', 'html', 'lcovonly' ].join(',')
+
   let runner = new MochaRunner('coverage/test/**/*.spec.js', {
-    reporter: 'travis-cov'
+    reporter: 'mocha-istanbul'
   })
 
   return runner.run()

@@ -13,15 +13,14 @@ const del = require('del')
 
 const moan = require('../lib/moan')
 
-function cleanDirectory(directoryPath) {
-  moan.log.writeln(`Cleaning directory: ${directoryPath}`)
+function clean(filePath) {
+  moan.log.writeln(`Cleaning: ${filePath}`)
 
-  return del(directoryPath)
+  return del(filePath)
 }
 
 module.exports = () => {
-  let directories = [ 'coverage' ]
-  let jobs = directories.map(cleanDirectory)
+  let patterns = [ 'coverage', 'html-report', 'lcov.info' ]
 
-  return Promise.all(jobs)
+  return Promise.all(patterns.map(clean))
 }

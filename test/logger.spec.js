@@ -81,7 +81,7 @@ describe('Logger', () => {
               expect(logger[methodName](message)).to.be(logger)
 
               expect(stubWrite.callCount).to.be(1)
-              expect(stubWrite.args).to.eql([ [ `${chalk.inverse('[default]')} ${expectedMessage}` ] ])
+              expect(stubWrite.args).to.eql([ [ `${chalk.bgWhite.black('[default]')} ${expectedMessage}` ] ])
             })
 
             moan.run()

@@ -47,10 +47,8 @@
     "mkdirp-promise": "^1.0.3",
     "mocha": "^2.3.3",
     "mocha-istanbul": "^0.2.0",
-    "mocha-lcov-reporter": "^1.0.0",
     "ncp": "^2.0.0",
-    "sinon": "^1.17.1",
-    "travis-cov": "^0.2.5"
+    "sinon": "^1.17.1"
   },
   "engines": {
     "node": ">=4.0"

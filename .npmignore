@@ -7,4 +7,4 @@ test/
 .npmignore
 .travis.yml
 *.md
-moan.js
+Moan.js

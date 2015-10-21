@@ -12,7 +12,7 @@
 const MochaRunner = require('./helper/mocha-runner')
 
 module.exports = () => {
-  let runner = new MochaRunner('test/**/*.spec.js', {
+  let runner = new MochaRunner('testFiles', {
     reporter: 'spec'
   })
 

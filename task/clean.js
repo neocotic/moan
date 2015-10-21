@@ -9,18 +9,11 @@
 
 'use strict'
 
-const del = require('del')
-
 const moan = require('../lib/moan')
 
-function clean(filePath) {
-  moan.log.writeln(`Cleaning: ${filePath}`)
-
-  return del(filePath)
-}
-
 module.exports = () => {
-  let patterns = [ 'coverage', 'html-report', 'lcov.info' ]
+  let fileSets = [ 'istanbulFiles' ]
+  let jobs = fileSets.map((id) => moan.fileSet(id).del())
 
-  return Promise.all(patterns.map(clean))
+  return Promise.all(jobs)
 }

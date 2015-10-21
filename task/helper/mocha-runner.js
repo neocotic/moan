@@ -9,40 +9,50 @@
 
 'use strict'
 
-const globby = require('globby')
 const Mocha = require('mocha')
 const path = require('path')
 
 const moan = require('../../lib/moan')
 const Utils = require('../../lib/utils')
 
+const fileSetSymbol = Symbol('fileSet')
 const loadSuiteSymbol = Symbol('loadSuite')
 const mochaSymbol = Symbol('mocha')
-const patternsSymbol = Symbol('patterns')
 const runSymbol = Symbol('run')
 
 /**
- * Runs a mocha test suite for based on a set of file patterns (globs).
+ * Runs a mocha test suite based on a {@link FileSet}.
  *
  * @public
  */
 module.exports = class MochaRunner {
 
   /**
-   * Creates a new instance of {@link MochaRunner} for test files identified by the glob <code>patterns</code>
-   * provided.
+   * Creates a new instance of {@link MochaRunner} for test files identified <code>fileSet</code> provided.
    *
-   * @param {string|string[]} patterns - the glob pattern to target the files for the test suite
+   * @param {string} fileSet - the ID of the {@link FileSet} for the test suite files
    * @param {Object} options - the options to be used
    * @param {string} options.reporter - the mocha reporter to be used
    * @public
    */
-  constructor(patterns, options) {
+  constructor(fileSet, options) {
+    /**
+     * The {@link FileSet}} for identifying the test suite files.
+     *
+     * @private
+     * @type {FileSet}
+     */
+    this[fileSetSymbol] = moan.fileSet(fileSet)
+
+    /**
+     * The <code>Mocha</code> instance.
+     *
+     * @private
+     * @type {Mocha}
+     */
     this[mochaSymbol] = new Mocha({
       reporter: options.reporter
     })
-
-    this[patternsSymbol] = Utils.asArray(patterns)
   }
 
   /**
@@ -66,7 +76,8 @@ module.exports = class MochaRunner {
    * @private
    */
   run() {
-    return globby(this[patternsSymbol])
+    return this[fileSetSymbol]
+      .get()
       .then((files) => {
         this[loadSuiteSymbol](files)
 
@@ -75,7 +86,7 @@ module.exports = class MochaRunner {
   }
 
   /**
-   * Runs the full test suite and reports any failure.
+   * Runs the full test suite and reports any failures.
    *
    * @private {Promise} A <code>Promise</code> used to track the test suite execution.
    * @private

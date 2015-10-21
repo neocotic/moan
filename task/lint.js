@@ -15,26 +15,30 @@ const path = require('path')
 const moan = require('../lib/moan')
 
 module.exports = () => {
-  let engine = new CLIEngine()
-  let report = engine.executeOnFiles([ 'lib/', 'task/', 'test/', 'Moan.js' ])
+  return moan.fileSet('lintFiles')
+    .get()
+    .then((lintFiles) => {
+      let engine = new CLIEngine()
+      let report = engine.executeOnFiles(lintFiles)
 
-  for (let result of report.results) {
-    let filePath = path.relative(process.cwd(), result.filePath)
+      for (let result of report.results) {
+        let filePath = path.relative(process.cwd(), result.filePath)
 
-    moan.log.writeln(`Linting file: ${filePath}`)
+        moan.log.writeln(`Linting file: ${filePath}`)
 
-    for (let message of result.messages) {
-      let output = `"${message.ruleId}" at line ${message.line} col ${message.column}: ${message.message}`
+        for (let message of result.messages) {
+          let output = `"${message.ruleId}" at line ${message.line} col ${message.column}: ${message.message}`
 
-      if (message.severity === 2) {
-        moan.log.error(output)
-      } else if (message.severity === 1) {
-        moan.log.warn(output)
+          if (message.severity === 2) {
+            moan.log.error(output)
+          } else if (message.severity === 1) {
+            moan.log.warn(output)
+          }
+        }
       }
-    }
-  }
 
-  if (report.errorCount > 0) {
-    throw new Error(`${report.errorCount} lint errors were found`)
-  }
+      if (report.errorCount > 0) {
+        throw new Error(`${report.errorCount} lint errors were found`)
+      }
+    })
 }

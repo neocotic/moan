@@ -11,6 +11,12 @@
 
 const moan = require('./lib/moan')
 
+moan.fileSet('instrumentedTestFiles', 'coverage/test/**/*.spec.js')
+moan.fileSet('istanbulFiles', [ 'coverage/', 'html-report/', 'lcov.info' ])
+moan.fileSet('lintFiles', [ 'lib/', 'task/', 'test/', 'Moan.js' ])
+moan.fileSet('sourceFiles', 'lib/**/*.js')
+moan.fileSet('testFiles', 'test/**/*.spec.js')
+
 moan.task('clean', require('./task/clean'))
 moan.task('coverage', 'instrument', require('./task/coverage'))
 moan.task('coveralls', 'coverage', require('./task/coveralls'))

@@ -10,7 +10,6 @@
 'use strict'
 
 const fs = require('fs')
-const globby = require('globby')
 const Instrumenter = require('istanbul').Instrumenter
 const mkdirp = require('mkdirp-promise')
 const ncp = require('ncp').ncp
@@ -31,12 +30,15 @@ function copyTests(from, to) {
 }
 
 module.exports = () => {
+  // FIXME: Remove "sync" operations
+
   let directory = 'coverage'
   let instrumenter = new Instrumenter()
 
   return mkdirp(directory)
     .then(() => {
-      return globby('lib/**/*.js')
+      return moan.fileSet('sourceFiles')
+        .get()
     })
     .then((sourceFiles) => {
       let jobs = sourceFiles.map((sourceFile) => {

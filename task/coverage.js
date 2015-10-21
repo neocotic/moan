@@ -15,7 +15,7 @@ module.exports = () => {
   process.env.ISTANBUL_REPORT_DIR = 'coverage'
   process.env.ISTANBUL_REPORTERS = [ 'text-summary', 'html', 'lcovonly' ].join(',')
 
-  let runner = new MochaRunner('coverage/test/**/*.spec.js', {
+  let runner = new MochaRunner('instrumentedTestFiles', {
     reporter: 'mocha-istanbul'
   })
 

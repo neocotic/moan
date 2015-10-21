@@ -12,7 +12,7 @@
 const coveralls = require('coveralls')
 const fs = require('fs')
 
-function loadLineCoverage() {
+function readLineCoverage() {
   return new Promise((resolve, reject) => {
     fs.readFile('lcov.info', 'utf8', (error, data) => {
       if (error) {
@@ -37,6 +37,6 @@ function sendCoverage(lineCoverage) {
 }
 
 module.exports = () => {
-  return loadLineCoverage()
+  return readLineCoverage()
     .then(sendCoverage)
 }

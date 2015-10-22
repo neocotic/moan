@@ -23,18 +23,6 @@ describe('Logger', () => {
 
   let logger
 
-  /**
-   * TODO: Document
-   *
-   * @param {string} methodName -
-   * @param {Object} expectations -
-   * @param {boolean} expectations.appendNewLine -
-   * @param {string} expectations.prefix -
-   * @param {boolean} expectations.prefixTask -
-   * @param {boolean} expectations.requiresDebug -
-   * @param {string} expectations.stream -
-   * @private
-   */
   function describeWriteMethod(methodName, streamOption, expectedPrefix, expectTaskName, expectNewLine, requiresDebug) {
     describe(`#${methodName}`, () => {
       let stubWrite

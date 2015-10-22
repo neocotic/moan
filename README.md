@@ -32,7 +32,7 @@ Simple task-based JavaScript build system
 - [x] Complete moan build for moan
 - [x] Add logging ability
 - [ ] Unit tests (with code coverage)
-- [ ] Add "fileSet" functionality
+- [x] Add "fileSet" functionality
 - [ ] Add "watch" functionality
 
 ## Bugs

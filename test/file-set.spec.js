@@ -13,8 +13,19 @@ const EventEmitter = require('events').EventEmitter
 const expect = require('expect.js')
 
 const FileSet = require('../lib/file-set')
+const FixtureHelper = require('./helper/fixture-helper')
 
 describe('FileSet', () => {
+  let fixtureHelper
+
+  before(() => {
+    fixtureHelper = new FixtureHelper()
+  })
+
+  after(() => {
+    fixtureHelper.cleanUp()
+  })
+
   it('should extend from EventEmitter', () => {
     let fileSet = new FileSet()
 
@@ -50,5 +61,83 @@ describe('FileSet', () => {
     })
   })
 
-  // TODO: Complete unit tests
+  describe('#del', () => {
+    let temp
+
+    beforeEach((done) => {
+      fixtureHelper.copy()
+        .then((tempDirectory) => {
+          temp = tempDirectory
+
+          done()
+        })
+        .catch(done)
+    })
+
+    afterEach(() => {
+      fixtureHelper.cleanUp(temp)
+    })
+
+    // TODO: Complete unit tests
+  })
+
+  describe('#first', () => {
+    let temp
+
+    before((done) => {
+      fixtureHelper.copy()
+        .then((tempDirectory) => {
+          temp = tempDirectory
+
+          done()
+        })
+        .catch(done)
+    })
+
+    after(() => {
+      fixtureHelper.cleanUp(temp)
+    })
+
+    // TODO: Complete unit tests
+  })
+
+  describe('#get', () => {
+    let temp
+
+    before((done) => {
+      fixtureHelper.copy()
+        .then((tempDirectory) => {
+          temp = tempDirectory
+
+          done()
+        })
+        .catch(done)
+    })
+
+    after(() => {
+      fixtureHelper.cleanUp(temp)
+    })
+
+    // TODO: Complete unit tests
+  })
+
+  describe('#last', () => {
+    let temp
+
+    before((done) => {
+      fixtureHelper.copy()
+        .then((tempDirectory) => {
+          temp = tempDirectory
+
+          done()
+        })
+        .catch(done)
+    })
+
+    after(() => {
+      fixtureHelper.cleanUp(temp)
+    })
+
+    // TODO: Complete unit tests
+  })
 })

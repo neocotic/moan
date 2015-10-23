@@ -9,7 +9,7 @@
 Simple task-based JavaScript build system
 
 [![Build Status](https://img.shields.io/travis/neocotic/moan/develop.svg?style=flat-square)](https://travis-ci.org/neocotic/moan)
-[![Coverage](https://img.shields.io/coveralls/jekyll/jekyll/develop.svg?style=flat-square)](https://coveralls.io/github/neocotic/moan)
+[![Coverage](https://img.shields.io/coveralls/neocotic/moan/develop.svg?style=flat-square)](https://coveralls.io/github/neocotic/moan)
 [![Dependency Status](https://img.shields.io/david/neocotic/moan.svg?style=flat-square)](https://david-dm.org/neocotic/moan)
 [![Dev Dependency Status](https://img.shields.io/david/dev/neocotic/moan.svg?style=flat-square)](https://david-dm.org/neocotic/moan#info=devDependencies)
 [![License](https://img.shields.io/npm/l/moan.svg?style=flat-square)](https://github.com/neocotic/moan/blob/master/LICENSE.md)

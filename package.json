@@ -36,8 +36,7 @@
     "findup-sync": "^0.3.0",
     "globby": "^3.0.1",
     "moment": "^2.10.6",
-    "numeral": "^1.5.3",
-    "pkginfo": "^0.3.0"
+    "numeral": "^1.5.3"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
@@ -47,9 +46,9 @@
     "mkdirp-promise": "^1.0.3",
     "mocha": "^2.3.3",
     "mocha-istanbul": "^0.2.0",
+    "mockery": "^1.4.0",
     "ncp": "^2.0.0",
-    "sinon": "^1.17.1",
-    "tmp": "0.0.28"
+    "sinon": "^1.17.1"
   },
   "engines": {
     "node": ">=4.0"

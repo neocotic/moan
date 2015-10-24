@@ -67,6 +67,38 @@ describe('Moan', () => {
     })
   })
 
+  describe('#configs', () => {
+    it('should be contain all unique configurations', () => {
+      moan.config('foo', 'bar')
+      moan.config('fu', 'baz')
+      moan.config('foo', 'buzz')
+
+      expect(moan.configs).to.eql([ 'foo', 'fu' ])
+    })
+
+    context('when nothing has been configured', () => {
+      it('should be an empty array', () => {
+        expect(moan.configs).to.eql([])
+      })
+    })
+
+    it('should be read-only', () => {
+      try {
+        moan.configs = [ 'foo' ]
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+
+    it('should not allow modifications', () => {
+      moan.configs.push('foo')
+
+      expect(moan.configs).to.eql([])
+    })
+  })
+
   describe('#currentTask', () => {
     context('when idle', () => {
       it('should be nothing', () => {
@@ -453,7 +485,7 @@ describe('Moan', () => {
       expect(moan.tasks).to.eql([ 'foo', 'bar' ])
     })
 
-    context('when tasks have been registered', () => {
+    context('when no tasks have been registered', () => {
       it('should be an empty array', () => {
         expect(moan.tasks).to.eql([])
       })

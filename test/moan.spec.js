@@ -41,7 +41,30 @@ describe('Moan', () => {
   })
 
   describe('#config', () => {
-    // TODO: Complete unit tests
+    context('when only configuration key is provided', () => {
+      it('should return configuration value', () => {
+        moan.config('foo', 'bar')
+
+        expect(moan.config('foo')).to.be('bar')
+      })
+
+      it('should return nothing if key does not exist', () => {
+        expect(moan.config('foo')).not.to.be.ok()
+      })
+    })
+
+    context('when configuration key and value are provided', () => {
+      it('should return newly configured value', () => {
+        expect(moan.config('foo', 'bar')).to.be('bar')
+      })
+
+      it('should replace any previously configured value', () => {
+        expect(moan.config('foo', 'bar')).to.be('bar')
+        expect(moan.config('foo', 'baz')).to.be('baz')
+
+        expect(moan.config('foo')).to.be('baz')
+      })
+    })
   })
 
   describe('#currentTask', () => {

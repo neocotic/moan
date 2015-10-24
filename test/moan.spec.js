@@ -541,7 +541,14 @@ describe('Moan', () => {
   })
 
   describe('#task', () => {
-    // TODO: Complete unit tests
+    it('should create and register a task with the name', () => {
+      let dependencies = [ 'fu', 'baz' ]
+      function runnable() {}
+
+      expect(moan.task('foo', dependencies, runnable)).to.be(moan)
+
+      expect(moan.tasks).to.eql([ 'foo' ])
+    })
   })
 
   describe('#tasks', () => {

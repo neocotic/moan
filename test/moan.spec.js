@@ -14,6 +14,7 @@ const expect = require('expect.js')
 const fs = require('fs')
 const sinon = require('sinon')
 
+const Logger = require('../lib/logger')
 const singleton = require('../lib/moan')
 const Moan = singleton.Moan
 
@@ -37,7 +38,33 @@ describe('Moan', () => {
   })
 
   describe('#constructor', () => {
-    // TODO: Complete unit tests
+    it('should setup class correctly', () => {
+      let options = { color: false, debug: true }
+
+      moan = new Moan(options)
+
+      expect(moan.color).to.be(false)
+      expect(moan.configs).to.eql([])
+      expect(moan.currentTask).not.to.be.ok()
+      expect(moan.debug).to.be(true)
+      expect(moan.fileSets).to.eql([])
+      expect(moan.log).to.be.a(Logger)
+      expect(moan.tasks).to.eql([])
+    })
+
+    context('when no options are provided', () => {
+      it('should use default values', () => {
+        moan = new Moan()
+
+        expect(moan.color).to.be(true)
+        expect(moan.configs).to.eql([])
+        expect(moan.currentTask).not.to.be.ok()
+        expect(moan.debug).to.be(false)
+        expect(moan.fileSets).to.eql([])
+        expect(moan.log).to.be.a(Logger)
+        expect(moan.tasks).to.eql([])
+      })
+    })
   })
 
   describe('#config', () => {

@@ -40,6 +40,10 @@ describe('Moan', () => {
     // TODO: Complete unit tests
   })
 
+  describe('#config', () => {
+    // TODO: Complete unit tests
+  })
+
   describe('#currentTask', () => {
     context('when idle', () => {
       it('should be nothing', () => {

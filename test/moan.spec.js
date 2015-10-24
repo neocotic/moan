@@ -14,6 +14,7 @@ const expect = require('expect.js')
 const fs = require('fs')
 const sinon = require('sinon')
 
+const FileSet = require('../lib/file-set')
 const Logger = require('../lib/logger')
 const singleton = require('../lib/moan')
 const Moan = singleton.Moan
@@ -75,7 +76,7 @@ describe('Moan', () => {
         expect(moan.config('foo')).to.be('bar')
       })
 
-      it('should return nothing if key does not exist', () => {
+      it('should return nothing if configuration does not exist', () => {
         expect(moan.config('foo')).not.to.be.ok()
       })
     })
@@ -256,7 +257,47 @@ describe('Moan', () => {
   })
 
   describe('#fileSet', () => {
-    // TODO: Complete unit tests
+    context('when only file set ID is provided', () => {
+      it('should return registered file set', () => {
+        let fileSet = moan.fileSet('foo', '**/*.md')
+
+        expect(moan.fileSet('foo')).to.be(fileSet)
+      })
+
+      it('should throw an error if file set does not exist', () => {
+        expect(moan.fileSet.bind(moan)).withArgs('foo').to.throwError()
+      })
+    })
+
+    context('when file set ID is provided with glob patterns and options', () => {
+      it('should return newly created file set', () => {
+        let patterns = [ '**/*.md', '**/*.txt' ]
+        let options = { nodir: true, nocase: true }
+
+        let fileSet = moan.fileSet('foo', patterns, options)
+
+        expect(fileSet).to.be.a(FileSet)
+        expect(fileSet.patterns).to.eql(patterns)
+
+        expect(moan.fileSet('foo')).to.be(fileSet)
+      })
+
+      it('should replace any previously registered file set', () => {
+        let fileSet = moan.fileSet('foo', '**/*.md')
+
+        expect(fileSet).to.be.a(FileSet)
+        expect(fileSet.patterns).to.eql([ '**/*.md' ])
+
+        expect(moan.fileSet('foo')).to.be(fileSet)
+
+        let replacement = moan.fileSet('foo', '**/*.txt')
+
+        expect(replacement).to.be.a(FileSet)
+        expect(replacement.patterns).to.eql([ '**/*.txt' ])
+
+        expect(moan.fileSet('foo')).to.be(replacement)
+      })
+    })
   })
 
   describe('#fileSets', () => {

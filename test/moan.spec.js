@@ -18,6 +18,7 @@ const FileSet = require('../lib/file-set')
 const Logger = require('../lib/logger')
 const singleton = require('../lib/moan')
 const Moan = singleton.Moan
+const Task = require('../lib/task')
 
 describe('moan', () => {
   it('should be a singleton instance of Moan', () => {
@@ -180,82 +181,6 @@ describe('Moan', () => {
     })
   })
 
-  describe('#dependencies', () => {
-    it('should return the dependencies for the tasks', () => {
-      let expected = [ 'foo', 'bar' ]
-
-      moan.task('default', expected)
-
-      expect(moan.dependencies('default')).to.eql(expected)
-    })
-
-    context('when task has no dependencies', () => {
-      it('should return an empty array', () => {
-        moan.task('default')
-
-        expect(moan.dependencies('default')).to.eql([])
-      })
-    })
-
-    context('when task does not exist', () => {
-      it('should throw an error', () => {
-        expect(moan.dependencies.bind(moan)).withArgs('default').to.throwError()
-      })
-    })
-
-    it('should not allow modifications', () => {
-      let expected = [ 'foo', 'bar' ]
-
-      moan.task('default', expected)
-      moan.dependencies('default').push('fu')
-
-      expect(moan.dependencies('default')).to.eql(expected)
-    })
-  })
-
-  describe('#failed', () => {
-    context('when task has failed to complete', () => {
-      it('should return true', (done) => {
-        moan.task('default', () => Promise.reject('Oops!'))
-
-        moan.run()
-          .then(() => {
-            expect().fail('Should have been rejected')
-          })
-          .catch(() => {
-            expect(moan.failed('default')).to.be(true)
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when task has completed successfully', () => {
-      it('should return false', (done) => {
-        moan.task('default', () => Promise.resolve('Yipee!'))
-
-        moan.run()
-          .then(() => {
-            expect(moan.failed('default')).to.be(false)
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when task is not complete', () => {
-      it('should return false', () => {
-        moan.task('default')
-
-        expect(moan.failed('default')).to.be(false)
-      })
-    })
-
-    context('when task does not exist', () => {
-      it('should throw an error', () => {
-        expect(moan.failed.bind(moan)).withArgs('default').to.throwError()
-      })
-    })
-  })
-
   describe('#fileSet', () => {
     context('when only file set ID is provided', () => {
       it('should return registered file set', () => {
@@ -332,230 +257,62 @@ describe('Moan', () => {
     })
   })
 
-  describe('#finished', () => {
-    context('when task has finished erroneously', () => {
-      it('should return true', (done) => {
-        moan.task('default', () => Promise.reject('Oops!'))
-
-        moan.run()
-          .then(() => {
-            expect().fail('Should have been rejected')
-          })
-          .catch(() => {
-            expect(moan.finished('default')).to.be(true)
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when task has finished successfully', () => {
-      it('should return true', (done) => {
-        moan.task('default', () => Promise.resolve('Yipee!'))
-
-        moan.run()
-          .then(() => {
-            expect(moan.finished('default')).to.be(true)
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when task is not complete', () => {
-      it('should return false', () => {
-        moan.task('default')
-
-        expect(moan.finished('default')).to.be(false)
-      })
-    })
-
-    context('when task does not exist', () => {
-      it('should throw an error', () => {
-        expect(moan.finished.bind(moan)).withArgs('default').to.throwError()
-      })
-    })
-  })
-
-  describe('#result', () => {
-    context('when synchronous task is finished', () => {
-      it('should return result if one is returned', (done) => {
-        let expected = 'foo'
-
-        moan.task('default', () => expected)
-
-        moan.run()
-          .then(() => {
-            expect(moan.result('default')).to.be(expected)
-          })
-          .then(done, done)
-      })
-
-      it('should return nothing if nothing is returned', (done) => {
-        moan.task('default', () => {})
-
-        moan.run()
-          .then(() => {
-            expect(moan.result('default')).not.to.be.ok()
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when asynchronous task with a callback function is finished', () => {
-      it('should return result if one is passed', (done) => {
-        let expected = 'foo'
-
-        moan.task('default', (callback) => {
-          callback(null, expected)
-        })
-
-        moan.run()
-          .then(() => {
-            expect(moan.result('default')).to.be(expected)
-          })
-          .then(done, done)
-      })
-
-      it('should return nothing if nothing is passed', (done) => {
-        moan.task('default', (callback) => {
-          callback(null)
-        })
-
-        moan.run()
-          .then(() => {
-            expect(moan.result('default')).not.to.be.ok()
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when asynchronous task with a promise is finished', () => {
-      it('should return result if resolved with one', (done) => {
-        let expected = 'foo'
-
-        moan.task('default', () => Promise.resolve(expected))
-
-        moan.run()
-          .then(() => {
-            expect(moan.result('default')).to.be(expected)
-          })
-          .then(done, done)
-      })
-
-      it('should return nothing if nothing is returned', (done) => {
-        moan.task('default', () => Promise.resolve())
-
-        moan.run()
-          .then(() => {
-            expect(moan.result('default')).not.to.be.ok()
-          })
-          .then(done, done)
-      })
-    })
-
-    it('should return nothing if task has finished erroneously', (done) => {
-      moan.task('default', () => Promise.reject('Oops!'))
-
-      moan.run()
-        .then(() => {
-          expect().fail('Should have been rejected')
-        })
-        .catch(() => {
-          expect(moan.result('default')).not.to.be.ok()
-        })
-        .then(done, done)
-    })
-
-    it('should throw an error if task does not exist', () => {
-      expect(moan.result.bind(moan)).withArgs('default').to.throwError()
-    })
-
-    it('should throw an error if task has not finished', () => {
-      moan.task('default', () => Promise.resolve('Yipee!'))
-
-      expect(moan.result.bind(moan)).withArgs('default').to.throwError()
-    })
-  })
-
   describe('#run', () => {
     // TODO: Complete unit tests
   })
 
-  describe('#started', () => {
-    context('when task has finished erroneously', () => {
-      it('should return true', (done) => {
-        moan.task('default', () => Promise.reject('Oops!'))
-
-        moan.run()
-          .then(() => {
-            expect().fail('Should have been rejected')
-          })
-          .catch(() => {
-            expect(moan.started('default')).to.be(true)
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when task has finished successfully', () => {
-      it('should return true', (done) => {
-        moan.task('default', () => Promise.resolve('Yipee!'))
-
-        moan.run()
-          .then(() => {
-            expect(moan.started('default')).to.be(true)
-          })
-          .then(done, done)
-      })
-    })
-
-    context('when task has started but not completed (in progress)', () => {
-      it('should return true', (done) => {
-        moan.task('default', (callback) => {
-          setImmediate(callback)
-        })
-
-        moan.on('start', () => {
-          expect(moan.started('default')).to.be(true)
-          expect(moan.finished('default')).to.be(false)
-
-          done()
-        })
-
-        moan.run()
-      })
-    })
-
-    context('when task has not started', () => {
-      it('should return false', () => {
-        moan.task('default')
-
-        expect(moan.started('default')).to.be(false)
-      })
-    })
-
-    context('when task does not exist', () => {
-      it('should throw an error', () => {
-        expect(moan.started.bind(moan)).withArgs('default').to.throwError()
-      })
-    })
-  })
-
   describe('#task', () => {
-    it('should create and register a task with the name', () => {
-      let dependencies = [ 'fu', 'baz' ]
-      function runnable() {}
+    context('when only task name is provided', () => {
+      it('should return registered task', () => {
+        let task = moan.task('foo', [])
 
-      expect(moan.task('foo', dependencies, runnable)).to.be(moan)
+        expect(moan.task('foo')).to.be(task)
+      })
 
-      expect(moan.tasks).to.eql([ 'foo' ])
+      it('should throw an error if task does not exist', () => {
+        expect(moan.task.bind(moan)).withArgs('foo').to.throwError()
+      })
+    })
+
+    context('when task name is provided with dependencies and runnable', () => {
+      it('should return newly created task', () => {
+        let name = 'foo'
+        let dependencies = [ 'fu', 'baz' ]
+        function runnable() {}
+
+        let task = moan.task(name, dependencies, runnable)
+
+        expect(task).to.be.a(Task)
+        expect(task.name).to.be(name)
+        expect(task.dependencies).to.eql(dependencies)
+        expect(task.runnable).to.be(runnable)
+
+        expect(moan.task(name)).to.be(task)
+      })
+
+      it('should replace any previously registered task', () => {
+        let task = moan.task('foo', 'fu')
+
+        expect(task).to.be.a(Task)
+        expect(task.dependencies).to.eql([ 'fu' ])
+
+        expect(moan.task('foo')).to.be(task)
+
+        let replacement = moan.task('foo', 'baz')
+
+        expect(replacement).to.be.a(Task)
+        expect(replacement.dependencies).to.eql([ 'baz' ])
+
+        expect(moan.task('foo')).to.be(replacement)
+      })
     })
   })
 
   describe('#tasks', () => {
     it('should be contain all unique registered tasks', () => {
-      moan.task('foo')
-      moan.task('bar')
-      moan.task('foo')
+      moan.task('foo', [])
+      moan.task('bar', [])
+      moan.task('foo', [])
 
       expect(moan.tasks).to.eql([ 'foo', 'bar' ])
     })

@@ -35,7 +35,6 @@ describe('Task', () => {
       expect(task.runnable).to.be(runnable)
       expect(task.finished).not.to.be.ok()
       expect(task.error).not.to.be.ok()
-      expect(task.result).not.to.be.ok()
       expect(task.started).not.to.be.ok()
       expect(task.failed).not.to.be.ok()
     })
@@ -49,7 +48,6 @@ describe('Task', () => {
         expect(task.runnable).to.be.a(Function)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
@@ -66,7 +64,6 @@ describe('Task', () => {
         expect(task.runnable).to.be.a(Function)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
@@ -83,7 +80,6 @@ describe('Task', () => {
         expect(task.runnable).to.be(runnable)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
@@ -100,10 +96,114 @@ describe('Task', () => {
         expect(task.runnable).to.be(runnable)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
+    })
+  })
+
+  describe('#dependencies', () => {
+    it('should be read-only', () => {
+      let task = new Task(name, [ 'fu', 'baz' ])
+
+      try {
+        task.dependencies = [ 'bar' ]
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+
+    it('should not allow modifications', () => {
+      let task = new Task(name)
+
+      task.dependencies.push('bar')
+
+      expect(task.dependencies).to.eql([])
+    })
+  })
+
+  describe('#error', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.error = new Error('bar')
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#failed', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.failed = true
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#finished', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.finished = true
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#name', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.name = 'bar'
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#result', () => {
+    it('should thrown an error if not finished', () => {
+      /* eslint no-unused-expressions: 0 */
+      let task = new Task(name)
+
+      try {
+        task.result
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(Error)
+      }
+    })
+
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.result = {}
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
     })
   })
 
@@ -366,6 +466,34 @@ describe('Task', () => {
 
         task.run()
       })
+    })
+  })
+
+  describe('#runnable', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.runnable = () => {}
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#started', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.started = true
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
     })
   })
 })

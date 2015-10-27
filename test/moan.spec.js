@@ -169,7 +169,7 @@ describe('Moan', () => {
           setImmediate(callback)
         })
 
-        moan.on('started', () => {
+        moan.on('start', () => {
           expect(moan.currentTask).to.be('default')
 
           done()
@@ -514,7 +514,7 @@ describe('Moan', () => {
           setImmediate(callback)
         })
 
-        moan.on('started', () => {
+        moan.on('start', () => {
           expect(moan.started('default')).to.be(true)
           expect(moan.finished('default')).to.be(false)
 

@@ -246,6 +246,24 @@ describe('Task', () => {
       })
     })
 
+    context('when operation begins', () => {
+      it('should emit a "start" event', (done) => {
+        let startEmitted = false
+        let task = new Task(name)
+
+        task.on('start', () => {
+          startEmitted = true
+        })
+        task.on('done', () => {
+          expect(startEmitted).to.be.ok()
+
+          done()
+        })
+
+        task.run()
+      })
+    })
+
     context('when operation completed successfully', () => {
       it('should be reflected in the task', (done) => {
         let task = new Task(name)
@@ -264,10 +282,10 @@ describe('Task', () => {
           .then(done, done)
       })
 
-      it('should emit a "completed" event', (done) => {
+      it('should emit a "done" event', (done) => {
         let task = new Task(name)
 
-        task.on('completed', (actual) => {
+        task.on('done', (actual) => {
           expect(actual).to.be(undefined)
 
           done()
@@ -296,11 +314,11 @@ describe('Task', () => {
           .then(done, done)
       })
 
-      it('should emit a "completed" event', (done) => {
+      it('should emit a "done" event', (done) => {
         let expected = 'bar'
         let task = new Task(name, () => expected)
 
-        task.on('completed', (actual) => {
+        task.on('done', (actual) => {
           expect(actual).to.be(expected)
 
           done()
@@ -334,13 +352,13 @@ describe('Task', () => {
           .then(done, done)
       })
 
-      it('should emit a "failed" event', (done) => {
+      it('should emit a "error" event', (done) => {
         let expected = new Error('bar')
         let task = new Task(name, () => {
           throw expected
         })
 
-        task.on('failed', (actual) => {
+        task.on('error', (actual) => {
           expect(actual).to.be(expected)
 
           done()

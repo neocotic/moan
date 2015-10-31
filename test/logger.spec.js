@@ -142,4 +142,38 @@ describe('Logger', () => {
   describeWriteMethod('warn', 'out', chalk.yellow('WARNING'), true, true)
   describeWriteMethod('write', 'out', null, false, false)
   describeWriteMethod('writeln', 'out', null, true, true)
+
+  describe('#separator', () => {
+    // TODO: Complete unit tests
+    beforeEach(() => {
+      options.out.columns = 80
+    })
+
+    context('when no string is provided', () => {
+      it('should use the default string ("=")', () => {
+        expect(logger.separator()).to.be(logger)
+
+        expect(options.out.write.callCount).to.be(1)
+        expect(options.out.write.args).to.eql([ [ '='.repeat(80) ] ])
+      })
+    })
+
+    context('when "out" option does not have "columns" property', () => {
+      it('should use the default width (30)', () => {
+        delete options.out.columns
+
+        expect(logger.separator()).to.be(logger)
+
+        expect(options.out.write.callCount).to.be(1)
+        expect(options.out.write.args).to.eql([ [ '='.repeat(30) ] ])
+      })
+    })
+
+    it('should repeat first character of string provided', () => {
+      expect(logger.separator('foo')).to.be(logger)
+
+      expect(options.out.write.callCount).to.be(1)
+      expect(options.out.write.args).to.eql([ [ 'f'.repeat(80) ] ])
+    })
+  })
 })

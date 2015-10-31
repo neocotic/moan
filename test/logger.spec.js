@@ -144,7 +144,6 @@ describe('Logger', () => {
   describeWriteMethod('writeln', 'out', null, true, true)
 
   describe('#separator', () => {
-    // TODO: Complete unit tests
     beforeEach(() => {
       options.out.columns = 80
     })

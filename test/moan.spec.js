@@ -258,7 +258,87 @@ describe('Moan', () => {
   })
 
   describe('#run', () => {
-    // TODO: Complete unit tests
+    it('should run all named tasks and their dependencies', (done) => {
+      let stack = []
+
+      function track(name) {
+        return () => {
+          stack.push(name)
+        }
+      }
+
+      moan.task('bar', [ 'fizz', 'buzz' ], track('bar'))
+      moan.task('baz', track('baz'))
+      moan.task('buzz', track('buzz'))
+      moan.task('fizz', track('fizz'))
+      moan.task('foo', 'fu', track('foo'))
+      moan.task('fu', [ 'baz' ], track('fu'))
+
+      moan.run([ 'foo', 'bar' ])
+        .then(() => {
+          expect(stack).to.eql([ 'baz', 'fu', 'foo', 'fizz', 'buzz', 'bar' ])
+        })
+        .then(done, done)
+    })
+
+    context('when no task names are provided', () => {
+      it('should run the "default" task', (done) => {
+        moan.task('default', () => {
+          done()
+        })
+
+        moan.run()
+      })
+
+      it('should throw an error if there is no the "default" task', () => {
+        expect(moan.run.bind(moan)).withArgs().to.throwError()
+      })
+    })
+
+    context('when a single task name is provided', () => {
+      it('should run the named task', (done) => {
+        moan.task('foo', () => {
+          done()
+        })
+
+        moan.run('foo')
+      })
+    })
+
+    context('when multiple task names are provided', () => {
+      it('should run all named tasks', (done) => {
+        let stack = []
+
+        moan.task('bar', () => {
+          stack.push('bar')
+        })
+        moan.task('foo', () => {
+          stack.push('foo')
+        })
+
+        moan.run([ 'foo', 'bar' ])
+          .then(() => {
+            expect(stack).to.eql([ 'foo', 'bar' ])
+          })
+          .then(done, done)
+      })
+    })
+
+    context('when a cyclic dependency is found', () => {
+      it('should throw an error', (done) => {
+        moan.task('cyclic', 'default')
+        moan.task('default', 'cyclic')
+
+        moan.run()
+          .then(() => {
+            expect().fail('Should have thrown error')
+          })
+          .catch((error) => {
+            expect(error).to.be.an(Error)
+          })
+          .then(done, done)
+      })
+    })
   })
 
   describe('#task', () => {

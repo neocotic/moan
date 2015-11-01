@@ -281,6 +281,59 @@ describe('Moan', () => {
         .then(done, done)
     })
 
+    it('should pipe the "done" event from Task', (done) => {
+      let expected = 'foo'
+      let startEmitted = false
+
+      moan.task('default', () => {
+        return expected
+      })
+
+      moan.on('start', (name) => {
+        expect(name).to.be('default')
+
+        startEmitted = true
+      })
+      moan.on('done', (name, value) => {
+        expect(name).to.be('default')
+        expect(value).to.be(expected)
+        expect(startEmitted).to.be(true)
+
+        done()
+      })
+
+      moan.run()
+    })
+
+    it('should pipe the "error" event from Task', (done) => {
+      let expected = new Error('foo')
+
+      moan.task('default', () => {
+        throw expected
+      })
+
+      moan.on('error', (name, error) => {
+        expect(name).to.be('default')
+        expect(error).to.be(expected)
+
+        done()
+      })
+
+      moan.run()
+    })
+
+    it('should pipe the "start" event from Task', (done) => {
+      moan.task('default', [])
+
+      moan.on('start', (name) => {
+        expect(name).to.be('default')
+
+        done()
+      })
+
+      moan.run()
+    })
+
     context('when no task names are provided', () => {
       it('should run the "default" task', (done) => {
         moan.task('default', () => {

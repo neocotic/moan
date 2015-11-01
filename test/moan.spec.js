@@ -334,6 +334,38 @@ describe('Moan', () => {
       moan.run()
     })
 
+    it('should throw an error if a task is missing', (done) => {
+      moan.task('default', 'foo')
+
+      moan.run()
+        .then(() => {
+          expect().fail('Should have thrown error')
+        })
+        .catch((error) => {
+          expect(error).to.be.an(Error)
+        })
+        .then(done, done)
+    })
+
+    context('when "force" option is enabled', () => {
+      it('should force tasks to run after failures', (done) => {
+        let expected = 'foo'
+
+        moan.force = true
+
+        moan.task('bar', () => {
+          throw new Error('bar')
+        })
+        moan.task('foo', 'bar', () => expected)
+
+        moan.run('foo')
+          .then((value) => {
+            expect(value).to.be(expected)
+          })
+          .then(done, done)
+      })
+    })
+
     context('when no task names are provided', () => {
       it('should run the "default" task', (done) => {
         moan.task('default', () => {
@@ -343,8 +375,15 @@ describe('Moan', () => {
         moan.run()
       })
 
-      it('should throw an error if there is no the "default" task', () => {
-        expect(moan.run.bind(moan)).withArgs().to.throwError()
+      it('should throw an error if there is no the "default" task', (done) => {
+        moan.run()
+          .then(() => {
+            expect().fail('Should have thrown error')
+          })
+          .catch((error) => {
+            expect(error).to.be.an(Error)
+          })
+          .then(done, done)
       })
     })
 

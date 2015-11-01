@@ -17,24 +17,6 @@ Simple task-based JavaScript build system
 
 > This project is very much a work in progress...
 
-# TODO
-
-- [ ] Complete first draft of main project
-- [x] Main API methods:
-  - [x] `task`: declare a task
-  - [x] `run`: runs specified task(s)
-  - [x] `finished`: checks if specified task has completed
-  - [x] `failed`: checks if specified task failed to complete
-  - [x] `names`: get task names
-  - [x] `dependencies`: get names of dependencies for specified task
-- [x] CLI
-- [x] Complete ESDoc coverage of code (incl. examples)
-- [x] Complete moan build for moan
-- [x] Add logging ability
-- [ ] Unit tests (with code coverage)
-- [x] Add "fileSet" functionality
-- [ ] Add "watch" functionality
-
 ## Bugs
 
 If you have any problems with this tool or would like to see changes currently in development you can do so

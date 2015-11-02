@@ -11,8 +11,12 @@
 
 const moan = require('./lib/moan')
 
+moan.config('coverageDirectory', 'coverage/')
+moan.config('encoding', 'utf8')
+moan.config('lineCoverageFile', 'lcov.info')
+
 moan.fileSet('instrumentedTestFiles', 'coverage/test/**/*.spec.js')
-moan.fileSet('istanbulFiles', [ 'coverage/', 'html-report/', 'lcov.info' ])
+moan.fileSet('istanbulFiles', [ moan.config('coverageDirectory'), 'html-report/', moan.config('lineCoverageFile') ])
 moan.fileSet('lintFiles', [ 'lib/', 'task/', 'test/', 'Moan.js' ])
 moan.fileSet('sourceFiles', 'lib/**/*.js')
 moan.fileSet('testFiles', 'test/**/*.spec.js')

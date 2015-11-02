@@ -11,7 +11,7 @@
 
 const expect = require('expect.js')
 
-const Utils = require('../lib/utils')
+const Utils = require('../src/Utils')
 
 describe('Utils', () => {
   describe('.asArray', () => {

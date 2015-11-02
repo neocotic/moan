@@ -14,8 +14,8 @@ const expect = require('expect.js')
 const sinon = require('sinon')
 const Writable = require('stream').Writable
 
-const Logger = require('../lib/logger')
-const Moan = require('../lib/moan').Moan
+const Logger = require('../src/Logger')
+const Moan = require('../src/Moan')
 
 describe('Logger', () => {
   let moan

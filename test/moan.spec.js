@@ -14,18 +14,10 @@ const expect = require('expect.js')
 const fs = require('fs')
 const sinon = require('sinon')
 
-const FileSet = require('../lib/file-set')
-const Logger = require('../lib/logger')
-const singleton = require('../lib/moan')
-const Moan = singleton.Moan
-const Task = require('../lib/task')
-
-describe('moan', () => {
-  it('should be a singleton instance of Moan', () => {
-    expect(singleton).to.be.ok()
-    expect(singleton).to.be.a(Moan)
-  })
-})
+const FileSet = require('../src/FileSet')
+const Logger = require('../src/Logger')
+const Moan = require('../src/Moan')
+const Task = require('../src/Task')
 
 describe('Moan', () => {
   let moan

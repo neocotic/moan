@@ -12,7 +12,7 @@
 const EventEmitter = require('events').EventEmitter
 const expect = require('expect.js')
 
-const Task = require('../lib/task')
+const Task = require('../src/Task')
 
 describe('Task', () => {
   let name = 'foo'

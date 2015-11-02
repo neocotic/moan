@@ -13,7 +13,7 @@ const MochaRunner = require('./helper/mocha-runner')
 
 module.exports = () => {
   let runner = new MochaRunner('testFiles', {
-    reporter: 'list'
+    reporter: 'spec'
   })
 
   return runner.run()

@@ -12,7 +12,7 @@
 const EventEmitter = require('events').EventEmitter
 const expect = require('expect.js')
 
-const Task = require('../lib/task')
+const Task = require('../src/Task')
 
 describe('Task', () => {
   let name = 'foo'
@@ -35,7 +35,6 @@ describe('Task', () => {
       expect(task.runnable).to.be(runnable)
       expect(task.finished).not.to.be.ok()
       expect(task.error).not.to.be.ok()
-      expect(task.result).not.to.be.ok()
       expect(task.started).not.to.be.ok()
       expect(task.failed).not.to.be.ok()
     })
@@ -49,7 +48,6 @@ describe('Task', () => {
         expect(task.runnable).to.be.a(Function)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
@@ -66,7 +64,6 @@ describe('Task', () => {
         expect(task.runnable).to.be.a(Function)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
@@ -83,7 +80,6 @@ describe('Task', () => {
         expect(task.runnable).to.be(runnable)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
@@ -100,10 +96,114 @@ describe('Task', () => {
         expect(task.runnable).to.be(runnable)
         expect(task.finished).not.to.be.ok()
         expect(task.error).not.to.be.ok()
-        expect(task.result).not.to.be.ok()
         expect(task.started).not.to.be.ok()
         expect(task.failed).not.to.be.ok()
       })
+    })
+  })
+
+  describe('#dependencies', () => {
+    it('should be read-only', () => {
+      let task = new Task(name, [ 'fu', 'baz' ])
+
+      try {
+        task.dependencies = [ 'bar' ]
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+
+    it('should not allow modifications', () => {
+      let task = new Task(name)
+
+      task.dependencies.push('bar')
+
+      expect(task.dependencies).to.eql([])
+    })
+  })
+
+  describe('#error', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.error = new Error('bar')
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#failed', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.failed = true
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#finished', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.finished = true
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#name', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.name = 'bar'
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#result', () => {
+    it('should thrown an error if not finished', () => {
+      /* eslint no-unused-expressions: 0 */
+      let task = new Task(name)
+
+      try {
+        task.result
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(Error)
+      }
+    })
+
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.result = {}
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
     })
   })
 
@@ -117,9 +217,8 @@ describe('Task', () => {
         task.run()
           .then((actual) => {
             expect(actual).to.be(undefined)
-
-            done()
           })
+          .then(done, done)
       })
 
       it('should handle successful outcome with result', (done) => {
@@ -131,9 +230,8 @@ describe('Task', () => {
         task.run()
           .then((actual) => {
             expect(actual).to.be(expected)
-
-            done()
           })
+          .then(done, done)
       })
 
       it('should handle errors', (done) => {
@@ -143,11 +241,13 @@ describe('Task', () => {
         })
 
         task.run()
+          .then(() => {
+            expect().fail('Should have been passed error')
+          })
           .catch((actual) => {
             expect(actual).to.be(expected)
-
-            done()
           })
+          .then(done, done)
       })
     })
 
@@ -158,9 +258,8 @@ describe('Task', () => {
         task.run()
           .then((actual) => {
             expect(actual).to.be(undefined)
-
-            done()
           })
+          .then(done, done)
       })
 
       it('should handle successful outcome with result', (done) => {
@@ -170,9 +269,8 @@ describe('Task', () => {
         task.run()
           .then((actual) => {
             expect(actual).to.be(expected)
-
-            done()
           })
+          .then(done, done)
       })
 
       it('should handle errors', (done) => {
@@ -180,11 +278,13 @@ describe('Task', () => {
         let task = new Task(name, () => Promise.reject(expected))
 
         task.run()
+          .then(() => {
+            expect().fail('Should have been rejected')
+          })
           .catch((actual) => {
             expect(actual).to.be(expected)
-
-            done()
           })
+          .then(done, done)
       })
     })
 
@@ -195,9 +295,8 @@ describe('Task', () => {
         task.run()
           .then((actual) => {
             expect(actual).to.be(undefined)
-
-            done()
           })
+          .then(done, done)
       })
 
       it('should handle successful outcome with result', (done) => {
@@ -207,9 +306,8 @@ describe('Task', () => {
         task.run()
           .then((actual) => {
             expect(actual).to.be(expected)
-
-            done()
           })
+          .then(done, done)
       })
 
       it('should handle errors', (done) => {
@@ -219,11 +317,13 @@ describe('Task', () => {
         })
 
         task.run()
+          .then(() => {
+            expect().fail('Should have thrown an error')
+          })
           .catch((actual) => {
             expect(actual).to.be(expected)
-
-            done()
           })
+          .then(done, done)
       })
     })
 
@@ -236,13 +336,31 @@ describe('Task', () => {
 
         expect(second).to.be(first)
 
-        first.then(() => {
-          let third = task.run()
+        first
+          .then(() => {
+            let third = task.run()
 
-          expect(third).to.be(first)
+            expect(third).to.be(first)
+          })
+          .then(done, done)
+      })
+    })
+
+    context('when operation begins', () => {
+      it('should emit a "start" event', (done) => {
+        let startEmitted = false
+        let task = new Task(name)
+
+        task.on('start', () => {
+          startEmitted = true
+        })
+        task.on('done', () => {
+          expect(startEmitted).to.be.ok()
 
           done()
         })
+
+        task.run()
       })
     })
 
@@ -254,20 +372,20 @@ describe('Task', () => {
 
         expect(task.started).to.be.ok()
 
-        promise.then(() => {
-          expect(task.error).not.to.be.ok()
-          expect(task.failed).not.to.be.ok()
-          expect(task.finished).to.be.ok()
-          expect(task.result).not.to.be.ok()
-
-          done()
-        })
+        promise
+          .then(() => {
+            expect(task.error).not.to.be.ok()
+            expect(task.failed).not.to.be.ok()
+            expect(task.finished).to.be.ok()
+            expect(task.result).not.to.be.ok()
+          })
+          .then(done, done)
       })
 
-      it('should emit a "completed" event', (done) => {
+      it('should emit a "done" event', (done) => {
         let task = new Task(name)
 
-        task.on('completed', (actual) => {
+        task.on('done', (actual) => {
           expect(actual).to.be(undefined)
 
           done()
@@ -286,21 +404,21 @@ describe('Task', () => {
 
         expect(task.started).to.be.ok()
 
-        promise.then(() => {
-          expect(task.error).not.to.be.ok()
-          expect(task.failed).not.to.be.ok()
-          expect(task.finished).to.be.ok()
-          expect(task.result).to.be(expected)
-
-          done()
-        })
+        promise
+          .then(() => {
+            expect(task.error).not.to.be.ok()
+            expect(task.failed).not.to.be.ok()
+            expect(task.finished).to.be.ok()
+            expect(task.result).to.be(expected)
+          })
+          .then(done, done)
       })
 
-      it('should emit a "completed" event', (done) => {
+      it('should emit a "done" event', (done) => {
         let expected = 'bar'
         let task = new Task(name, () => expected)
 
-        task.on('completed', (actual) => {
+        task.on('done', (actual) => {
           expect(actual).to.be(expected)
 
           done()
@@ -321,23 +439,26 @@ describe('Task', () => {
 
         expect(task.started).to.be.ok()
 
-        promise.catch(() => {
-          expect(task.error).to.be(expected)
-          expect(task.failed).to.be.ok()
-          expect(task.finished).to.be.ok()
-          expect(task.result).not.to.be.ok()
-
-          done()
-        })
+        promise
+          .then(() => {
+            expect().fail('Should have thrown error')
+          })
+          .catch(() => {
+            expect(task.error).to.be(expected)
+            expect(task.failed).to.be.ok()
+            expect(task.finished).to.be.ok()
+            expect(task.result).not.to.be.ok()
+          })
+          .then(done, done)
       })
 
-      it('should emit a "failed" event', (done) => {
+      it('should emit a "error" event', (done) => {
         let expected = new Error('bar')
         let task = new Task(name, () => {
           throw expected
         })
 
-        task.on('failed', (actual) => {
+        task.on('error', (actual) => {
           expect(actual).to.be(expected)
 
           done()
@@ -345,6 +466,34 @@ describe('Task', () => {
 
         task.run()
       })
+    })
+  })
+
+  describe('#runnable', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.runnable = () => {}
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
+    })
+  })
+
+  describe('#started', () => {
+    it('should be read-only', () => {
+      let task = new Task(name)
+
+      try {
+        task.started = true
+
+        expect().fail('Should have thrown error')
+      } catch (error) {
+        expect(error).to.be.a(TypeError)
+      }
     })
   })
 })

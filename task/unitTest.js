@@ -9,8 +9,12 @@
 
 'use strict'
 
-const moan = require('..')
+const MochaRunner = require('./helper/MochaRunner')
 
 module.exports = () => {
-  return moan.fileSet('clean').del()
+  let runner = new MochaRunner('testFiles', {
+    reporter: 'spec'
+  })
+
+  return runner.run()
 }

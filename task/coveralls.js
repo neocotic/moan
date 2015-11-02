@@ -12,9 +12,14 @@
 const coveralls = require('coveralls')
 const fs = require('fs')
 
+const moan = require('..')
+
 function readLineCoverage() {
+  let encoding = moan.config('encoding')
+  let file = moan.config('lineCoverageFile')
+
   return new Promise((resolve, reject) => {
-    fs.readFile('lcov.info', 'utf8', (error, data) => {
+    fs.readFile(file, encoding, (error, data) => {
       if (error) {
         reject(error)
       } else {

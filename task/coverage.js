@@ -9,10 +9,11 @@
 
 'use strict'
 
-const MochaRunner = require('./helper/mocha-runner')
+const moan = require('..')
+const MochaRunner = require('./helper/MochaRunner')
 
 module.exports = () => {
-  process.env.ISTANBUL_REPORT_DIR = 'coverage'
+  process.env.ISTANBUL_REPORT_DIR = moan.config('coverageDir')
   process.env.ISTANBUL_REPORTERS = [ 'text-summary', 'html', 'lcovonly' ].join(',')
 
   let runner = new MochaRunner('instrumentedTestFiles', {

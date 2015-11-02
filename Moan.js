@@ -9,20 +9,35 @@
 
 'use strict'
 
-const moan = require('./lib/moan')
+const moan = require('.')
 
-moan.fileSet('instrumentedTestFiles', 'coverage/test/**/*.spec.js')
-moan.fileSet('istanbulFiles', [ 'coverage/', 'html-report/', 'lcov.info' ])
-moan.fileSet('lintFiles', [ 'lib/', 'task/', 'test/', 'Moan.js' ])
-moan.fileSet('sourceFiles', 'lib/**/*.js')
-moan.fileSet('testFiles', 'test/**/*.spec.js')
+moan.config('coverageDir', 'coverage/')
+moan.config('encoding', 'utf8')
+moan.config('lineCoverageFile', 'lcov.info')
+moan.config('sourceDir', 'src/')
+moan.config('testDir', 'test/')
+
+moan.fileSet('clean', [
+  moan.config('coverageDir'),
+  'html-report/',
+  moan.config('lineCoverageFile')
+])
+moan.fileSet('instrumentedTestFiles', `coverage/${moan.config('testDir')}**/*.spec.js`)
+moan.fileSet('lintFiles', [
+  moan.config('sourceDir'),
+  'task/',
+  moan.config('testDir'),
+  'Moan.js'
+])
+moan.fileSet('sourceFiles', `${moan.config('sourceDir')}**/*.js`)
+moan.fileSet('testFiles', `${moan.config('testDir')}**/*.spec.js`)
 
 moan.task('clean', require('./task/clean'))
 moan.task('coverage', 'instrument', require('./task/coverage'))
 moan.task('coveralls', 'coverage', require('./task/coveralls'))
 moan.task('instrument', 'clean', require('./task/instrument'))
 moan.task('lint', require('./task/lint'))
-moan.task('unit-test', require('./task/unit-test'))
+moan.task('unitTest', require('./task/unitTest'))
 
 moan.task('default', 'test')
-moan.task('test', [ 'lint', 'unit-test', 'coverage' ])
+moan.task('test', [ 'lint', 'unitTest', 'coverage' ])

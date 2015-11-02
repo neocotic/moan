@@ -9,12 +9,6 @@
 
 'use strict'
 
-const MochaRunner = require('./helper/mocha-runner')
+const Moan = require('./src/Moan')
 
-module.exports = () => {
-  let runner = new MochaRunner('testFiles', {
-    reporter: 'spec'
-  })
-
-  return runner.run()
-}
+module.exports = new Moan()

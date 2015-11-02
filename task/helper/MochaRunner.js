@@ -12,8 +12,8 @@
 const Mocha = require('mocha')
 const path = require('path')
 
-const moan = require('../../lib/moan')
-const Utils = require('../../lib/utils')
+const moan = require('../..')
+const Utils = require('../../src/Utils')
 
 const fileSetSymbol = Symbol('fileSet')
 const loadSuiteSymbol = Symbol('loadSuite')
@@ -23,9 +23,9 @@ const runSymbol = Symbol('run')
 /**
  * Runs a mocha test suite based on a {@link FileSet}.
  *
- * @public
+ * @access public
  */
-module.exports = class MochaRunner {
+class MochaRunner {
 
   /**
    * Creates a new instance of {@link MochaRunner} for test files identified <code>fileSet</code> provided.
@@ -33,13 +33,13 @@ module.exports = class MochaRunner {
    * @param {string} fileSet - the ID of the {@link FileSet} for the test suite files
    * @param {Object} options - the options to be used
    * @param {string} options.reporter - the mocha reporter to be used
-   * @public
+   * @access public
    */
   constructor(fileSet, options) {
     /**
      * The {@link FileSet}} for identifying the test suite files.
      *
-     * @private
+     * @access private
      * @type {FileSet}
      */
     this[fileSetSymbol] = moan.fileSet(fileSet)
@@ -47,7 +47,7 @@ module.exports = class MochaRunner {
     /**
      * The <code>Mocha</code> instance.
      *
-     * @private
+     * @access private
      * @type {Mocha}
      */
     this[mochaSymbol] = new Mocha({
@@ -59,7 +59,7 @@ module.exports = class MochaRunner {
    * Loads each of the specified <code>files</code> into this mocha test suite.
    *
    * @param {string[]} files - the test files to be loaded into the suite
-   * @private
+   * @access private
    */
   [loadSuiteSymbol](files) {
     for (let file of files) {
@@ -73,7 +73,7 @@ module.exports = class MochaRunner {
    * Loads all test files into this suite and then runs them all for the configured reporter.
    *
    * @return {Promise} A <code>Promise</code> used to track the test suite execution.
-   * @private
+   * @access private
    */
   run() {
     return this[fileSetSymbol]
@@ -88,8 +88,8 @@ module.exports = class MochaRunner {
   /**
    * Runs the full test suite and reports any failures.
    *
-   * @private {Promise} A <code>Promise</code> used to track the test suite execution.
-   * @private
+   * @return {Promise} A <code>Promise</code> used to track the test suite execution.
+   * @access private
    */
   [runSymbol]() {
     return new Promise((resolve, reject) => {
@@ -107,3 +107,5 @@ module.exports = class MochaRunner {
     })
   }
 }
+
+module.exports = MochaRunner

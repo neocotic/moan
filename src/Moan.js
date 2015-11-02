@@ -10,13 +10,16 @@
 'use strict'
 
 const EventEmitter = require('events').EventEmitter
-const pkginfo = require('pkginfo')(module)
+const findup = require('findup-sync')
+const fs = require('fs')
 
-const FileSet = require('./file-set')
-const Logger = require('./logger')
-const Task = require('./task')
-const Utils = require('./utils')
+const FileSet = require('./FileSet')
+const Logger = require('./Logger')
+const Task = require('./Task')
+const Utils = require('./Utils')
 
+const cachedVersionSymbol = Symbol('cachedVersion')
+const configsSymbol = Symbol('configs')
 const fileSetsSymbol = Symbol('fileSets')
 const getFileSetSymbol = Symbol('getFileSet')
 const getTaskSymbol = Symbol('getTask')
@@ -29,7 +32,7 @@ const tasksSymbol = Symbol('tasks')
  * A moaning task manager which can't help but register and run any task that your heart desires, although expect it to
  * moan about it.
  *
- * @public
+ * @access public
  */
 class Moan extends EventEmitter {
 
@@ -37,7 +40,7 @@ class Moan extends EventEmitter {
    * Creates a new instance of {@link Moan} with no registered tasks.
    *
    * @param {MaonOptions} [options] - the options for the {@link Moan}
-   * @public
+   * @access public
    */
   constructor(options) {
     super()
@@ -47,15 +50,23 @@ class Moan extends EventEmitter {
     /**
      * Whether the {@link Logger} should use colors.
      *
-     * @public
+     * @access public
      * @type {boolean}
      */
     this.color = !!options.color
 
     /**
+     * A map of shared configurations.
+     *
+     * @access private
+     * @type {Map<string, *}
+     */
+    this[configsSymbol] = new Map()
+
+    /**
      * Whether {@link Logger#debug} should output.
      *
-     * @public
+     * @access public
      * @type {boolean}
      */
     this.debug = !!options.debug
@@ -63,15 +74,23 @@ class Moan extends EventEmitter {
     /**
      * A map of {@link FileSet} IDs and their registered instance.
      *
-     * @private
+     * @access private
      * @type {Map<string, FileSet>}
      */
     this[fileSetsSymbol] = new Map()
 
     /**
+     * Whether tasks should be forced to execute even after errors.
+     *
+     * @access public
+     * @type {boolean}
+     */
+    this.force = !!options.force
+
+    /**
      * The logger for this {@link Moan} instance.
      *
-     * @public
+     * @access public
      * @type {Logger}
      */
     this.log = new Logger(this)
@@ -79,7 +98,7 @@ class Moan extends EventEmitter {
     /**
      * The current stack of tasks being executed.
      *
-     * @private
+     * @access private
      * @type {string[]}
      */
     this[taskStackSymbol] = []
@@ -87,79 +106,65 @@ class Moan extends EventEmitter {
     /**
      * A map of {@link Task} names and their registered instance.
      *
-     * @private
+     * @access private
      * @type {Map<string, Task>}
      */
     this[tasksSymbol] = new Map()
   }
 
   /**
+   * Returns the shared configuration with the <code>key</code> provided.
+   *
+   * If a <code>value</code> is also provided, it will be assigned to the configuration with for <code>key</code>.
+   *
+   * This is especially useful when breaking tasks down into separate files as it allows any kind of configurations to
+   * be shared between them.
+   *
+   * @example
+   * moan.config('version', require('./package.json').version)
+   *
+   * moan.task('deploy', () => {
+   *   return paas.deploy(version)
+   * })
+   * @param {string} key - the key of the configuration to be returned or have its <code>value</code> assigned
+   * @param {*} [value] - the value to be assigned to the configuration with the <code>key</code> provided
+   * @return {*} The value of the configuration with the given <code>key</code>.
+   * @access public
+   */
+  config(key, value) {
+    if (arguments.length === 1) {
+      return this[configsSymbol].get(key)
+    }
+
+    this[configsSymbol].set(key, value)
+
+    return value
+  }
+
+  /**
+   * An array of shared configuration keys in the order in which they were configured and will be empty if none exist.
+   *
+   * @example
+   * moan.config('username', process.env.USER || process.env.USERNAME)
+   * moan.config('version', require('./package.json').version)
+   *
+   * moan.configs
+   * //=> [ "username", "version" ]
+   * @access public
+   * @type {string[]}
+   */
+  get configs() {
+    return Array.from(this[configsSymbol].keys())
+  }
+
+  /**
    * The name of the task currently being executed.
    *
-   * @public
+   * @access public
    * @type {string}
    */
   get currentTask() {
     return this[taskStackSymbol][this[taskStackSymbol].length - 1]
-  }
-
-  /**
-   * Returns a list of names for tasks for which the task with the specified <code>name</code> depends on.
-   *
-   * @example
-   * moan.task('build', [ 'compile', 'test' ])
-   * moan.task('compile', () => { ... })
-   * moan.task('lint', () => { ... })
-   * moan.task('test', 'lint', () => { ... })
-   *
-   * moan.dependencies('buid')
-   * //=> [ "compile", "test" ]
-   * moan.dependencies('compile')
-   * //=> []
-   * moan.dependencies('lint')
-   * //=> []
-   * moan.dependencies('test')
-   * //=> [ "lint" ]
-   * @param {string} name - the name of the task whose dependencies are to be returned
-   * @return {string[]} An array of task names on which the named task depends which will be empty if it has no
-   * dependencies.
-   * @throws {Error} If no task could be found for the given <code>name</code>.
-   * @public
-   */
-  dependencies(name) {
-    let task = this[getTaskSymbol](name)
-
-    return task.dependencies.slice()
-  }
-
-  /**
-   * Returns whether the task with the specified <code>name</code> failed.
-   *
-   * This method will return <code>false</code> if the task has not even been ran so it's recommended that it is used
-   * in conjunction with {@link Moan#finished}.
-   *
-   * @example
-   * moan.task('compile', () => {
-   *   throw new Error('Oh snap!')
-   * })
-   *
-   * function taskHandler() {
-   *   logger.log(`compile task failed: ${moan.failed('compile')}`)
-   *   //=> true
-   * }
-   *
-   * moan.run('compile')
-   *   .then(taskHandler, taskHandler)
-   * @param {string} name - the name of the task to be checked
-   * @return {boolean} <code>true</code> if the named task has ran but failed to complete; otherwise
-   * <code>false</code>.
-   * @throws {Error} If no task could be found for the given <code>name</code>.
-   * @public
-   */
-  failed(name) {
-    let task = this[getTaskSymbol](name)
-
-    return task.failed
   }
 
   /**
@@ -199,8 +204,8 @@ class Moan extends EventEmitter {
    * @param {Object} [options={}] - the glob options to be used by the created {@link FileSet}
    * @return {FileSet} The {@link FileSet} associated with the given <code>id</code>, which may just have been
    * registered/re-registered if either <code>patterns</code> or <code>options</code> were also specified.
-   * @throws {Error} If no {@link FileSet} could be found for the given <code>id</code>.
-   * @public
+   * @throws {Error} If only <code>id</code> is provied but no {@link FileSet} could be found for it.
+   * @access public
    */
   fileSet(id, patterns, options) {
     if (arguments.length === 1) {
@@ -224,38 +229,11 @@ class Moan extends EventEmitter {
    *
    * moan.fileSets
    * //=> [ "docs", "sources", "tests" ]
-   * @public
+   * @access public
    * @type {string[]}
    */
   get fileSets() {
     return Array.from(this[fileSetsSymbol].keys())
-  }
-
-  /**
-   * Returns whether the task with the specified <code>name</code> finished.
-   *
-   * This method only indicates whether the task has finished, regardless of whether it was successful. In order to
-   * check if it passed successfully combine with {@link Moan#failed}.
-   *
-   * @example
-   * moan.task('compile', () => { ... })
-   *
-   * function taskHandler() {
-   *   logger.log(`compile task finished: ${moan.finished('compile')}`)
-   *   //=> true
-   * }
-   *
-   * moan.run('compile')
-   *   .then(taskHandler, taskHandler)
-   * @param {string} name - the name of the task to be checked
-   * @return {boolean} <code>true</code> if the named task has finished running; otherwise <code>false</code>.
-   * @throws {Error} If no task could be found for the given <code>name</code>.
-   * @public
-   */
-  finished(name) {
-    let task = this[getTaskSymbol](name)
-
-    return task.finished
   }
 
   /**
@@ -264,7 +242,7 @@ class Moan extends EventEmitter {
    * @param {string} id - the ID of the {@link FileSet} to be returned
    * @return {FileSet} The {@link FileSet} with the given <code>id</code>.
    * @throws {Error} If no {@link FileSet} can be found for the given <code>id</code>.
-   * @private
+   * @access private
    */
   [getFileSetSymbol](id) {
     let fileSet = this[fileSetsSymbol].get(id)
@@ -281,7 +259,7 @@ class Moan extends EventEmitter {
    * @param {string} name - the name of the {@link Task} to be returned
    * @return {Task} The {@link Task} with the given <code>name</code>.
    * @throws {Error} If no {@link Task} can be found for the given <code>name</code>.
-   * @private
+   * @access private
    */
   [getTaskSymbol](name) {
     let task = this[tasksSymbol].get(name)
@@ -293,51 +271,11 @@ class Moan extends EventEmitter {
   }
 
   /**
-   * Returns the result value for the task with the specified <code>name</code>.
-   *
-   * It's important to note that tasks are not required to provide a result so don't always expect this method to
-   * return anything. Also, if this method is called within a task, that task should declare a dependency on the named
-   * task so that it's executed before the current task, otherwise this method will throw an error. Another - less
-   * elegant - solution invoke {@link Moan#run} within the current task for the named task and then call this method
-   * once it's completed.
-   *
-   * @example
-   * moan.task('deploy', 'version', () => {
-   *   let version = moan.result('version')
-   *
-   *   return paas.deploy(version)
-   * })
-   * moan.task('version', () => {
-   *   let version = require('./package.json').version
-   *
-   *   return new Promise((resolve, reject) => {
-   *     child_process.spawn('git', [ 'tag', version ])
-   *       .on('close', (code) => {
-   *         if (!code) {
-   *           resolve(version)
-   *         } else {
-   *           reject(new Error(`Could not tag version: ${version}`))
-   *         }
-   *       })
-   *   })
-   * })
-   * @param {string} name - the name of the task whose result is to be returned, where applicable
-   * @return {*} The result of the task with the given <code>name</code>, where applicable.
-   * @throws {Error} If no task could be found for the given <code>name</code> or if it has not ran.
-   * @public
-   */
-  result(name) {
-    let task = this[getTaskSymbol](name)
-    if (!task.finished) {
-      throw new Error(`Task has not executed: ${name}`)
-    }
-
-    return task.result
-  }
-
-  /**
    * Runs all of the tasks with the given <code>names</code>, returning a <code>Promise</code> which will be fullfilled
    * once all of the tasks and their dependencies have been executed or rejected if any of the them fail to execute.
+   *
+   * The returned <code>Promise</code> may also be rejected if a task could not be found for any of the given
+   * <code>names</code> or there is a cyclic dependency.
    *
    * @example
    * moan.task('build', [ 'compile', 'test' ])
@@ -354,9 +292,7 @@ class Moan extends EventEmitter {
    *   .catch((error) => { ... })
    * @param {string|string[]} [names] - the name or names of the tasks to be executed
    * @return {Promise} The <code>Promise</code> to track progress of the all the task executions.
-   * @throws {Error} If a task could not be found for any of the given <code>names</code> or there is a cyclic
-   * dependency.
-   * @public
+   * @access public
    */
   run(names) {
     names = Utils.asArray(names)
@@ -364,7 +300,10 @@ class Moan extends EventEmitter {
       names.push('default')
     }
 
-    return this[runTasksSymbol](names)
+    this[taskStackSymbol].splice(0, this[taskStackSymbol].length)
+
+    return Promise.resolve()
+      .then(() => this[runTasksSymbol](names))
   }
 
   /**
@@ -377,29 +316,28 @@ class Moan extends EventEmitter {
    * @param {Task} task - the {@link Task} to be executed, but only after all of its dependencies
    * @return {Promise} The <code>Promise</code> to track the task execution progress.
    * @throws {Error} If there is a cyclic dependency.
-   * @private
+   * @access private
    */
   [runTaskSymbol](task) {
     if (this[taskStackSymbol].indexOf(task.name) >= 0) {
       throw new Error(`Cyclic dependency found: ${task.name}`)
     }
 
+    this[taskStackSymbol].push(task.name)
+
     let prerequisite = task.dependencies.length > 0 ? this[runTasksSymbol](task.dependencies) : Promise.resolve()
 
     return prerequisite
-      .then(() => {
-        this[taskStackSymbol].push(task.name)
-
-        this.log.writeln('Running...')
-
-        return task.run()
-      })
+      .then(() => task.run())
       .then((result) => {
-        this.log.ok()
-
         this[taskStackSymbol].pop()
 
         return result
+      })
+      .catch((error) => {
+        if (!this.force) {
+          throw error
+        }
       })
   }
 
@@ -411,10 +349,12 @@ class Moan extends EventEmitter {
    * another which in turn depends on the {@link Task}) or someone is attempting to run a {@link Task} within the its
    * own {@link taskRunnable}.
    *
+   * The returned <code>Promise</code> may be rejected if a task could not be found for any of the given
+   * <code>names</code> or there is a cyclic dependency.
+   *
    * @param {string[]} names - the name of the tasks to be executed
    * @return {Promise} The <code>Promise</code> to track progress of the all the task executions.
-   * @throws {Error} If a task could not be found any of the given <code>names</code> or there is a cyclic dependency.
-   * @private
+   * @access private
    */
   [runTasksSymbol](names) {
     return names
@@ -426,36 +366,8 @@ class Moan extends EventEmitter {
   }
 
   /**
-   * Returns whether the task with the specified <code>name</code> has started.
-   *
-   * This method only indicates whether the task has started, however, it will still return <code>true</code> even if
-   * the task has also finished. In order to check if it is still in progress combine with {@link Moan#finished}.
-   *
-   * @example
-   * moan.task('build', [ 'compile', 'test' ])
-   * moan.task('compile', () => { ... })
-   * moan.task('lint', () => { ... })
-   * moan.task('test', 'lint', () => { ... })
-   *
-   * moan.run('build')
-   *
-   * moan.started('compile')
-   * //=> true
-   * moan.started('build')
-   * //=> false
-   * @param {string} name - the name of the task to be checked
-   * @return {boolean} <code>true</code> if the named task has started running; otherwise <code>false</code>.
-   * @throws {Error} If no task could be found for the given <code>name</code>.
-   * @public
-   */
-  started(name) {
-    let task = this[getTaskSymbol](name)
-
-    return task.started
-  }
-
-  /**
-   * Registers a task with the specified <code>name</code> and with any optional <code>dependencies</code> provided.
+   * Registers a task with the specified <code>name</code> and with any optional <code>dependencies</code> provided or
+   * simply returns the {@link Task} registered against the given <code>name</code> if no other arguments are provided.
    *
    * The <code>runnable</code> function will be invoked if/when this task is executed either directly or indirectly (as
    * a dependency itself) via {@link Moan#run}. A no-operation function will be used if <code>runnable</code> is not
@@ -472,9 +384,6 @@ class Moan extends EventEmitter {
    * Obviously, these points only apply to asynchronous tasks and for synchronous tasks, simply don't declare any
    * arguments on <code>runable</code> or have it return a <i>thenable</i> (yuck!) object. Such tasks will simply
    * complete once the function has been invoked, and the return value will be used as the result value for the task.
-   *
-   * This {@link Moan} will also emit a <code>"task"</code> or <code>"error"</code> event if/when the registered task
-   * emits a <code>"completed"</code> or <code>"failed"</code> event respectively.
    *
    * @example <caption>Register a synchronous task</caption>
    * moan.task('compile', () => {
@@ -529,23 +438,32 @@ class Moan extends EventEmitter {
    * @param {string} name - the name of the task to be used
    * @param {string|string[]} [dependencies=[]] - a list of task names that the task depends on
    * @param {taskRunnable} [runnable] - the runnable function that performs the task operation
-   * @return {Moan} A reference to this {@link Moan} instance for chaining purposes.
-   * @public
+   * @return {Task} The {@link Task} associated with the given <code>name</code>, which may just have been
+   * registered/re-registered if either <code>dependencies</code> or <code>runnable</code> were also specified.
+   * @throws {Error} If only <code>name</code> is provied but no {@link Task} could be found for it.
+   * @access public
    */
   task(name, dependencies, runnable) {
+    if (arguments.length === 1) {
+      return this[getTaskSymbol](name)
+    }
+
     let task = new Task(name, dependencies, runnable)
 
-    this[tasksSymbol].set(task.name, task)
+    this[tasksSymbol].set(name, task)
 
     task
-      .on('completed', (value) => {
-        this.emit('task', value, task.name)
+      .on('done', (value) => {
+        this.emit('done', name, value)
       })
-      .on('failed', (error) => {
-        this.emit('error', error, task.name)
+      .on('error', (error) => {
+        this.emit('error', name, error)
+      })
+      .on('start', () => {
+        this.emit('start', name)
       })
 
-    return this
+    return task
   }
 
   /**
@@ -559,7 +477,7 @@ class Moan extends EventEmitter {
    *
    * moan.tasks
    * //=> [ "build", "compile", "lint", "test" ]
-   * @public
+   * @access public
    * @type {string[]}
    */
   get tasks() {
@@ -569,26 +487,38 @@ class Moan extends EventEmitter {
   /**
    * The current version of this module.
    *
-   * @public
+   * @access public
    * @type {string}
    */
   get version() {
-    return pkginfo.version
+    /* eslint "no-sync": 0 */
+    if (this[cachedVersionSymbol]) {
+      return this[cachedVersionSymbol]
+    }
+
+    let pkgFile = findup('package.json', { cwd: __dirname })
+    let pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
+
+    this[cachedVersionSymbol] = pkg.version
+
+    return this[cachedVersionSymbol]
   }
 }
 
 /**
  * Options for the {@link Moan} constructor.
  *
- * @public
+ * @access public
  * @typedef {Object} MoanOptions
  * @property {boolean} [color=true] - <code>true</code> to enable colors when logging; otherwise <code>false</code>.
  * @property {boolean} [debug=false] - <code>true</code> to enable debug-level logging; otherwise <code>false</code>.
+ * @property {boolean} [force=false] - <code>true</code> to keep running tasks after errors; otherwise
+ * <code>false</code>.
  */
 Moan.defaults = {
   color: true,
-  debug: false
+  debug: false,
+  force: false
 }
 
-module.exports = new Moan()
-module.exports.Moan = Moan
+module.exports = Moan

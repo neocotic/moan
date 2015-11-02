@@ -13,8 +13,9 @@ const del = require('del')
 const EventEmitter = require('events').EventEmitter
 const globby = require('globby')
 
-const Utils = require('./utils')
+const Utils = require('./Utils')
 
+const getSymbol = Symbol('get')
 const optionsSymbol = Symbol('options')
 const patternsSymbol = Symbol('patterns')
 
@@ -24,9 +25,9 @@ const patternsSymbol = Symbol('patterns')
  *
  * This is ideal when mapped to a reference as this results in a better representation of file sets.
  *
- * @public
+ * @access public
  */
-module.exports = class FileSet extends EventEmitter {
+class FileSet extends EventEmitter {
 
   /**
    * Creates a new instance of {@link FileSet} based on the glob <code>patterns</code> and <code>options</code>
@@ -34,7 +35,7 @@ module.exports = class FileSet extends EventEmitter {
    *
    * @param {string|string[]} [patterns=[]] - the glob pattern(s) to be used to target the files in the set
    * @param {Object} [options={}] - the glob options to be used
-   * @public
+   * @access public
    */
   constructor(patterns, options) {
     super()
@@ -42,7 +43,7 @@ module.exports = class FileSet extends EventEmitter {
     /**
      * The glob patterns for identifying the files in this {@link FileSet}.
      *
-     * @private
+     * @access private
      * @type {string[]}
      */
     this[patternsSymbol] = Utils.asArray(patterns)
@@ -50,7 +51,7 @@ module.exports = class FileSet extends EventEmitter {
     /**
      * The glob options to be used when looking up the files in this {@link FileSet}.
      *
-     * @private
+     * @access private
      * @type {Object}
      */
     this[optionsSymbol] = options || {}
@@ -60,7 +61,7 @@ module.exports = class FileSet extends EventEmitter {
    * Deletes all files and/or directories that match this {@link FileSet} and provides their file paths.
    *
    * @return {Promise} A <code>Promise</code> used to track the deletion of all matching files and/or directories.
-   * @public
+   * @access public
    */
   del() {
     return del(this[patternsSymbol], this[optionsSymbol])
@@ -68,6 +69,9 @@ module.exports = class FileSet extends EventEmitter {
         this.emit('deleted', files)
 
         return files
+      })
+      .catch((error) => {
+        this.emit('error', error)
       })
   }
 
@@ -79,7 +83,7 @@ module.exports = class FileSet extends EventEmitter {
    * @param {Object} [options={}] - the glob options to extend those used by this {@link FileSet}
    * @return {FileSet} A {@link FileSet} containing glob patterns and options which resulted in merging those of this
    * {@link FileSet} and those provided.
-   * @public
+   * @access public
    */
   expand(patterns, options) {
     patterns = this[patternsSymbol].concat(Utils.asArray(patterns))
@@ -95,23 +99,46 @@ module.exports = class FileSet extends EventEmitter {
    * future, however, this may be optimized to stop searching for other files after the one is foud.
    *
    * @return {Promise} A <code>Promise</code> used to track the lookup of the first matching file or directory.
-   * @public
+   * @access public
    */
   first() {
-    return this.get()
-      .then((files) => files[0])
+    return this[getSymbol](true)
+      .then((files) => {
+        let file = files[0]
+
+        this.emit('found', [ file ])
+
+        return file
+      })
   }
 
   /**
    * Finds all files and/or directories that match this {@link FileSet} and provides their file paths.
    *
    * @return {Promise} A <code>Promise</code> used to track the lookup of all matching files and/or directories.
-   * @public
+   * @access public
    */
   get() {
+    return this[getSymbol]()
+  }
+
+  /**
+   * Finds all files and/or directories that match this {@link FileSet} and provides their file paths with the option
+   * to silence events that are emitted internally.
+   *
+   * This method is used by others to improve code re-use and avoid duplication.
+   *
+   * @param {boolean} [silenceFoundEvent=false] - <code>true</code> to prevent this method from emitting the "found"
+   * event; otherwise <code>false</code>
+   * @return {Promise} A <code>Promise</code> used to track the lookup of all matching files and/or directories.
+   * @access private
+   */
+  [getSymbol](silenceFoundEvent) {
     return globby(this[patternsSymbol], this[optionsSymbol])
       .then((files) => {
-        this.emit('found', files)
+        if (!silenceFoundEvent) {
+          this.emit('found', files)
+        }
 
         return files
       })
@@ -124,20 +151,28 @@ module.exports = class FileSet extends EventEmitter {
    * Finds the last file or directory that matches this {@link FileSet} and provides its file path.
    *
    * @return {Promise} A <code>Promise</code> used to track the lookup of the last matching file or directory.
-   * @public
+   * @access public
    */
   last() {
-    return this.get()
-      .then((files) => files[files.length - 1])
+    return this[getSymbol](true)
+      .then((files) => {
+        let file = files[files.length - 1]
+
+        this.emit('found', [ file ])
+
+        return file
+      })
   }
 
   /**
    * The glob patterns used by this {@link FileSet}.
    *
-   * @public
+   * @access public
    * @type {string[]}
    */
   get patterns() {
     return Array.from(this[patternsSymbol])
   }
 }
+
+module.exports = FileSet

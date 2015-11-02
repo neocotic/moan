@@ -13,10 +13,10 @@ const EventEmitter = require('events').EventEmitter
 const findup = require('findup-sync')
 const fs = require('fs')
 
-const FileSet = require('./file-set')
-const Logger = require('./logger')
-const Task = require('./task')
-const Utils = require('./utils')
+const FileSet = require('./FileSet')
+const Logger = require('./Logger')
+const Task = require('./Task')
+const Utils = require('./Utils')
 
 const cachedVersionSymbol = Symbol('cachedVersion')
 const configsSymbol = Symbol('configs')
@@ -32,7 +32,7 @@ const tasksSymbol = Symbol('tasks')
  * A moaning task manager which can't help but register and run any task that your heart desires, although expect it to
  * moan about it.
  *
- * @public
+ * @access public
  */
 class Moan extends EventEmitter {
 
@@ -40,7 +40,7 @@ class Moan extends EventEmitter {
    * Creates a new instance of {@link Moan} with no registered tasks.
    *
    * @param {MaonOptions} [options] - the options for the {@link Moan}
-   * @public
+   * @access public
    */
   constructor(options) {
     super()
@@ -50,7 +50,7 @@ class Moan extends EventEmitter {
     /**
      * Whether the {@link Logger} should use colors.
      *
-     * @public
+     * @access public
      * @type {boolean}
      */
     this.color = !!options.color
@@ -58,7 +58,7 @@ class Moan extends EventEmitter {
     /**
      * A map of shared configurations.
      *
-     * @private
+     * @access private
      * @type {Map<string, *}
      */
     this[configsSymbol] = new Map()
@@ -66,7 +66,7 @@ class Moan extends EventEmitter {
     /**
      * Whether {@link Logger#debug} should output.
      *
-     * @public
+     * @access public
      * @type {boolean}
      */
     this.debug = !!options.debug
@@ -74,7 +74,7 @@ class Moan extends EventEmitter {
     /**
      * A map of {@link FileSet} IDs and their registered instance.
      *
-     * @private
+     * @access private
      * @type {Map<string, FileSet>}
      */
     this[fileSetsSymbol] = new Map()
@@ -82,7 +82,7 @@ class Moan extends EventEmitter {
     /**
      * Whether tasks should be forced to execute even after errors.
      *
-     * @public
+     * @access public
      * @type {boolean}
      */
     this.force = !!options.force
@@ -90,7 +90,7 @@ class Moan extends EventEmitter {
     /**
      * The logger for this {@link Moan} instance.
      *
-     * @public
+     * @access public
      * @type {Logger}
      */
     this.log = new Logger(this)
@@ -98,7 +98,7 @@ class Moan extends EventEmitter {
     /**
      * The current stack of tasks being executed.
      *
-     * @private
+     * @access private
      * @type {string[]}
      */
     this[taskStackSymbol] = []
@@ -106,7 +106,7 @@ class Moan extends EventEmitter {
     /**
      * A map of {@link Task} names and their registered instance.
      *
-     * @private
+     * @access private
      * @type {Map<string, Task>}
      */
     this[tasksSymbol] = new Map()
@@ -129,7 +129,7 @@ class Moan extends EventEmitter {
    * @param {string} key - the key of the configuration to be returned or have its <code>value</code> assigned
    * @param {*} [value] - the value to be assigned to the configuration with the <code>key</code> provided
    * @return {*} The value of the configuration with the given <code>key</code>.
-   * @public
+   * @access public
    */
   config(key, value) {
     if (arguments.length === 1) {
@@ -150,7 +150,7 @@ class Moan extends EventEmitter {
    *
    * moan.configs
    * //=> [ "username", "version" ]
-   * @public
+   * @access public
    * @type {string[]}
    */
   get configs() {
@@ -160,7 +160,7 @@ class Moan extends EventEmitter {
   /**
    * The name of the task currently being executed.
    *
-   * @public
+   * @access public
    * @type {string}
    */
   get currentTask() {
@@ -205,7 +205,7 @@ class Moan extends EventEmitter {
    * @return {FileSet} The {@link FileSet} associated with the given <code>id</code>, which may just have been
    * registered/re-registered if either <code>patterns</code> or <code>options</code> were also specified.
    * @throws {Error} If only <code>id</code> is provied but no {@link FileSet} could be found for it.
-   * @public
+   * @access public
    */
   fileSet(id, patterns, options) {
     if (arguments.length === 1) {
@@ -229,7 +229,7 @@ class Moan extends EventEmitter {
    *
    * moan.fileSets
    * //=> [ "docs", "sources", "tests" ]
-   * @public
+   * @access public
    * @type {string[]}
    */
   get fileSets() {
@@ -242,7 +242,7 @@ class Moan extends EventEmitter {
    * @param {string} id - the ID of the {@link FileSet} to be returned
    * @return {FileSet} The {@link FileSet} with the given <code>id</code>.
    * @throws {Error} If no {@link FileSet} can be found for the given <code>id</code>.
-   * @private
+   * @access private
    */
   [getFileSetSymbol](id) {
     let fileSet = this[fileSetsSymbol].get(id)
@@ -259,7 +259,7 @@ class Moan extends EventEmitter {
    * @param {string} name - the name of the {@link Task} to be returned
    * @return {Task} The {@link Task} with the given <code>name</code>.
    * @throws {Error} If no {@link Task} can be found for the given <code>name</code>.
-   * @private
+   * @access private
    */
   [getTaskSymbol](name) {
     let task = this[tasksSymbol].get(name)
@@ -292,7 +292,7 @@ class Moan extends EventEmitter {
    *   .catch((error) => { ... })
    * @param {string|string[]} [names] - the name or names of the tasks to be executed
    * @return {Promise} The <code>Promise</code> to track progress of the all the task executions.
-   * @public
+   * @access public
    */
   run(names) {
     names = Utils.asArray(names)
@@ -316,7 +316,7 @@ class Moan extends EventEmitter {
    * @param {Task} task - the {@link Task} to be executed, but only after all of its dependencies
    * @return {Promise} The <code>Promise</code> to track the task execution progress.
    * @throws {Error} If there is a cyclic dependency.
-   * @private
+   * @access private
    */
   [runTaskSymbol](task) {
     if (this[taskStackSymbol].indexOf(task.name) >= 0) {
@@ -354,7 +354,7 @@ class Moan extends EventEmitter {
    *
    * @param {string[]} names - the name of the tasks to be executed
    * @return {Promise} The <code>Promise</code> to track progress of the all the task executions.
-   * @private
+   * @access private
    */
   [runTasksSymbol](names) {
     return names
@@ -441,7 +441,7 @@ class Moan extends EventEmitter {
    * @return {Task} The {@link Task} associated with the given <code>name</code>, which may just have been
    * registered/re-registered if either <code>dependencies</code> or <code>runnable</code> were also specified.
    * @throws {Error} If only <code>name</code> is provied but no {@link Task} could be found for it.
-   * @public
+   * @access public
    */
   task(name, dependencies, runnable) {
     if (arguments.length === 1) {
@@ -477,7 +477,7 @@ class Moan extends EventEmitter {
    *
    * moan.tasks
    * //=> [ "build", "compile", "lint", "test" ]
-   * @public
+   * @access public
    * @type {string[]}
    */
   get tasks() {
@@ -487,7 +487,7 @@ class Moan extends EventEmitter {
   /**
    * The current version of this module.
    *
-   * @public
+   * @access public
    * @type {string}
    */
   get version() {
@@ -508,7 +508,7 @@ class Moan extends EventEmitter {
 /**
  * Options for the {@link Moan} constructor.
  *
- * @public
+ * @access public
  * @typedef {Object} MoanOptions
  * @property {boolean} [color=true] - <code>true</code> to enable colors when logging; otherwise <code>false</code>.
  * @property {boolean} [debug=false] - <code>true</code> to enable debug-level logging; otherwise <code>false</code>.
@@ -521,5 +521,4 @@ Moan.defaults = {
   force: false
 }
 
-module.exports = new Moan()
-module.exports.Moan = Moan
+module.exports = Moan

@@ -15,7 +15,7 @@ const mkdirp = require('mkdirp-promise')
 const ncp = require('ncp').ncp
 const path = require('path')
 
-const moan = require('../lib/moan')
+const moan = require('..')
 
 function copyTests(from, to) {
   return new Promise((resolve, reject) => {
@@ -33,7 +33,7 @@ function instrument(instrumenter, sourceFile) {
   /* eslint "no-sync": 0 */
   moan.log.writeln(`Instrumenting file: ${path.normalize(sourceFile)}`)
 
-  let directory = moan.config('coverageDirectory')
+  let directory = moan.config('coverageDir')
   let inputFile = path.join(process.cwd(), sourceFile)
   let outputFile = path.join(process.cwd(), directory, sourceFile)
 
@@ -70,7 +70,7 @@ function writeFile(file, contents) {
 }
 
 module.exports = () => {
-  let directory = moan.config('coverageDirectory')
+  let directory = moan.config('coverageDir')
   let instrumenter = new Instrumenter()
 
   return mkdirp(directory)
@@ -80,5 +80,5 @@ module.exports = () => {
 
       return Promise.all(jobs)
     })
-    .then(() => copyTests('test', directory))
+    .then(() => copyTests(moan.config('testDir'), directory))
 }

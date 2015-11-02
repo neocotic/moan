@@ -11,7 +11,7 @@
 
 const chalk = require('chalk')
 
-const Utils = require('./utils')
+const Utils = require('./Utils')
 
 const errSymbol = Symbol('err')
 const moanSymbol = Symbol('moan')
@@ -22,7 +22,7 @@ const writelnSymbol = Symbol('writeln')
 /**
  * Logs messages for a specific {@link Moan} instance to the standard streams.
  *
- * @public
+ * @access public
  */
 class Logger {
 
@@ -31,7 +31,7 @@ class Logger {
    *
    * @param {Moan} moan - the {@link Moan} instance for which the {@link Logger} will be used
    * @param {LoggerOptions} [options] - the options to be used
-   * @public
+   * @access public
    */
   constructor(moan, options) {
     options = Object.assign({}, Logger.defaults, options)
@@ -39,7 +39,7 @@ class Logger {
     /**
      * The stream to which this {@link Logger} writes error messages.
      *
-     * @private
+     * @access private
      * @type {Writable}
      */
     this[errSymbol] = options.err
@@ -47,7 +47,7 @@ class Logger {
     /**
      * The {@link Moan} instance with which this {@link Logger} is associated.
      *
-     * @private
+     * @access private
      * @type {Moan}
      */
     this[moanSymbol] = moan
@@ -55,7 +55,7 @@ class Logger {
     /**
      * The stream to which this {@link Logger} writes output messages.
      *
-     * @private
+     * @access private
      * @type {Writable}
      */
     this[outSymbol] = options.out
@@ -71,7 +71,7 @@ class Logger {
    *
    * @param {string} [message=""] - the debug message to be logged
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @public
+   * @access public
    */
   debug(message) {
     if (!this[moanSymbol].debug) {
@@ -90,7 +90,7 @@ class Logger {
    *
    * @param {string} [message=""] - the error message to be logged
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @public
+   * @access public
    */
   error(message) {
     return this[writelnSymbol](this[errSymbol], chalk.red('ERROR'), Utils.asString(message))
@@ -105,7 +105,7 @@ class Logger {
    *
    * @param {string} [message=""] - the positive message to be logged
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @public
+   * @access public
    */
   ok(message) {
     return this[writelnSymbol](this[outSymbol], chalk.green('OK'), Utils.asString(message))
@@ -117,7 +117,7 @@ class Logger {
    *
    * @param {string} [str="="] - the separator string to be repeated (only the first character will be used)
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @public
+   * @access public
    */
   separator(str) {
     str = Utils.asString(str) || '='
@@ -137,7 +137,7 @@ class Logger {
    *
    * @param {string} [message=""] - the warning message to be logged
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @public
+   * @access public
    */
   warn(message) {
     return this[writelnSymbol](this[outSymbol], chalk.yellow('WARNING'), Utils.asString(message))
@@ -148,7 +148,7 @@ class Logger {
    *
    * @param {string} [message=""] - the message to be logged
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @public
+   * @access public
    */
   write(message) {
     return this[writeSymbol](this[outSymbol], Utils.asString(message))
@@ -162,7 +162,7 @@ class Logger {
    *
    * @param {string} [message=""] - the message to be logged
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @public
+   * @access public
    */
   writeln(message) {
     return this[writelnSymbol](this[outSymbol], '', Utils.asString(message))
@@ -174,7 +174,7 @@ class Logger {
    * @param {Writable} stream - the writable stream to which <code>message</code> is to be written
    * @param {string} message - the message to be written
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @private
+   * @access private
    */
   [writeSymbol](stream, message) {
     if (!(chalk.supportsColor && this[moanSymbol].color)) {
@@ -196,7 +196,7 @@ class Logger {
    * @param {string} prefix - the string to be prefix <code>message</code>
    * @param {string} message - the message to be written
    * @return {Logger} A reference to this {@link Logger} for chaining purposes.
-   * @private
+   * @access private
    */
   [writelnSymbol](stream, prefix, message) {
     let currentTask = this[moanSymbol].currentTask
@@ -215,7 +215,7 @@ class Logger {
 /**
  * Options for the {@link Logger} constructor.
  *
- * @public
+ * @access public
  * @typedef {Object} LoggerOptions
  * @property {Writable} [err=process.stderr] - The stream to which error messages are to be written.
  * @property {Writable} [out=process.stdout] - The stream to whcih output messages are to be written.

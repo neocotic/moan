@@ -12,9 +12,9 @@
 /**
  * Contains utility methods that can be used throughout the module.
  *
- * @public
+ * @access public
  */
-module.exports = class Utils {
+class Utils {
 
   /**
    * Always returns an array either containing the specified argument if it's not an array, or the argument itself
@@ -26,7 +26,7 @@ module.exports = class Utils {
    * element within the returned array
    * @return {Array} Either <code>arg</code> if it's an array or an array containing it if it's not, which will be
    * empty if <code>arg</code> is <code>null</code>.
-   * @public
+   * @access public
    */
   static asArray(arg) {
     if (arg == null) {
@@ -46,7 +46,7 @@ module.exports = class Utils {
    * be returned as a string
    * @return {string} Either a comma-separated list of values of <code>arg</code> is an array or a string
    * representation of it if it's not, which will be empty if <code>arg</code> is <code>null</code>.
-   * @public
+   * @access public
    */
   static asString(arg) {
     if (arg == null) {
@@ -64,7 +64,7 @@ module.exports = class Utils {
    * @param {string} [singularString=""] - the string to return if <code>count</code> is one
    * @return {string} <code>singularString</code> if <code>count</code> is one; otherwise <code>pluralString</code>.
    * @throws {RangeError} If <code>count</code> is less than zero.
-   * @public
+   * @access public
    */
   static plural(count, pluralString, singularString) {
     if (count < 0) {
@@ -80,3 +80,5 @@ module.exports = class Utils {
     return count !== 1 ? pluralString : singularString
   }
 }
+
+module.exports = Utils

@@ -12,7 +12,7 @@
 const coveralls = require('coveralls')
 const fs = require('fs')
 
-const moan = require('../lib/moan')
+const moan = require('..')
 
 function readLineCoverage() {
   let encoding = moan.config('encoding')

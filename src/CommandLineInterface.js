@@ -17,17 +17,17 @@ const moment = require('moment')
 const numeral = require('numeral')
 const path = require('path')
 
-const moan = require('./moan')
-const Utils = require('./utils')
+const moan = require('..')
+const Utils = require('./Utils')
 
 const commandSymbol = Symbol('command')
-const finalize = Symbol('finalize')
+const finalizeSymbol = Symbol('finalize')
 const moanSymbol = Symbol('moan')
 
 /**
  * Manages interaction with this module from the command-line interface.
  *
- * @public
+ * @access public
  */
 class CommandLineInterface {
 
@@ -35,7 +35,7 @@ class CommandLineInterface {
    * Creates a new instance of {@link CommandLineInterface}.
    *
    * @param {CommandLineInterfaceOptions} [options] - the options for the {@link CommandLineInterface}
-   * @public
+   * @access public
    */
   constructor(options) {
     options = Object.assign({}, CommandLineInterface.defaults, options)
@@ -43,7 +43,7 @@ class CommandLineInterface {
     /**
      * The {@link Moan} instance being used by this {@link CommandLineInterface}.
      *
-     * @private
+     * @access private
      * @type {Moan}
      */
     this[moanSymbol] = options.moan
@@ -51,7 +51,7 @@ class CommandLineInterface {
     /**
      * The dedicated <code>Command</code> for this {@link CommandLineInterface}.
      *
-     * @private
+     * @access private
      * @type {Command}
      */
     this[commandSymbol] = new Command()
@@ -98,9 +98,9 @@ class CommandLineInterface {
    *
    * @param {Moment} start - the moment on which the CLI was executed
    * @param {Error} [error] - the error that occurred during the execution, where applicable
-   * @private
+   * @access private
    */
-  [finalize](start, error) {
+  [finalizeSymbol](start, error) {
     let end = moment.utc()
     let memory = process.memoryUsage()
 
@@ -128,7 +128,7 @@ class CommandLineInterface {
   /**
    * Logs the list of available task names.
    *
-   * @public
+   * @access public
    */
   list() {
     let tasks = this[moanSymbol].names()
@@ -150,7 +150,7 @@ class CommandLineInterface {
    * successfully but may be rejected if the Moan file could not be found or is invalid.
    *
    * @return {Promise} The <code>Promise</code> for tracking finding and loading the Moan file.
-   * @public
+   * @access public
    */
   load() {
     return new Promise((resolve, reject) => {
@@ -179,7 +179,7 @@ class CommandLineInterface {
    *
    * @param {string|string[]} [args=[]] - the command-line arguments to be parsed
    * @return {Promise} The <code>Promise</code> for tracking the execution of command-line actions.
-   * @public
+   * @access public
    */
   parse(args) {
     args = Utils.asArray(args)
@@ -200,10 +200,10 @@ class CommandLineInterface {
         }
       })
       .then(() => {
-        this[finalize](start)
+        this[finalizeSymbol](start)
       })
       .catch((error) => {
-        this[finalize](start, error)
+        this[finalizeSymbol](start, error)
       })
   }
 }
@@ -211,7 +211,7 @@ class CommandLineInterface {
 /**
  * Options for the {@link CommandLineInterface} constructor.
  *
- * @public
+ * @access public
  * @typedef {Object} CommandLineInterfaceOptions
  * @property {Moan} [moan] - the {@link Moan} instance to be used
  */
@@ -219,5 +219,4 @@ CommandLineInterface.defaults = {
   moan
 }
 
-module.exports = new CommandLineInterface(moan)
-module.exports.CommandLineInterface = CommandLineInterface
+module.exports = CommandLineInterface

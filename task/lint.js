@@ -12,7 +12,7 @@
 const CLIEngine = require('eslint').CLIEngine
 const path = require('path')
 
-const moan = require('../lib/moan')
+const moan = require('..')
 
 module.exports = () => {
   return moan.fileSet('lintFiles')

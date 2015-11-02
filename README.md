@@ -1,12 +1,10 @@
-```
-. ___ ___     ___      __      ___
-/' __` __`\  / __`\  /'__`\  /' _ `\
-/\ \/\ \/\ \/\ \L\ \/\ \L\.\_/\ \/\ \
-\ \_\ \_\ \_\ \____/\ \__/.\_\ \_\ \_\
- \/_/\/_/\/_/\/___/  \/__/\/_/\/_/\/_/
-```
+    ooo. .oo.  .oo.    .ooooo.   .oooo.   ooo. .oo.
+    `888P"Y88bP"Y88b  d88' `88b `P  )88b  `888P"Y88b
+     888   888   888  888   888  .oP"888   888   888
+     888   888   888  888   888 d8(  888   888   888
+    o888o o888o o888o `Y8bod8P' `Y888""8o o888o o888o
 
-Simple task-based JavaScript build system
+A simple modern task-based JavaScript build system that doesn't try to do too much.
 
 [![Build Status](https://img.shields.io/travis/neocotic/moan/develop.svg?style=flat-square)](https://travis-ci.org/neocotic/moan)
 [![Coverage](https://img.shields.io/coveralls/neocotic/moan/develop.svg?style=flat-square)](https://coveralls.io/github/neocotic/moan)
@@ -15,7 +13,55 @@ Simple task-based JavaScript build system
 [![License](https://img.shields.io/npm/l/moan.svg?style=flat-square)](https://github.com/neocotic/moan/blob/master/LICENSE.md)
 [![Release](https://img.shields.io/npm/v/moan.svg?style=flat-square)](https://www.npmjs.com/package/moan)
 
-> This project is very much a work in progress...
+## Install
+
+Install using [npm](https://www.npmjs.com):
+
+``` bash
+$ npm install -g moan
+```
+
+Now you can use the `moan` command *anywhere!*
+
+You'll need to have at least [Node.js](https://nodejs.org) v4 installed.
+
+## Usage
+
+All you need is a `Moan.js` file in your project directory and you can start building with moan.
+
+### CLI
+
+Here's how to use the `moan` command:
+
+    Usage: moan [options] <task ...>
+
+    Options:
+
+      -h, --help         output usage information
+      -V, --version      output the version number
+      -d, --debug        enable debug output
+      -f, --file [name]  specify alternative name for the Moan file
+      --force            force tasks to run even after errors
+      -l, --list         list all available tasks
+      --no-color         disable color output
+      --stack            print stack traces for errors
+
+### API
+
+Here's how you can interact in your `Moan.js` file but take a look at the code to see all that's available.
+
+#### `task(name)`
+#### `task(name[, dependencies][, runnable])`
+#### `config(key)`
+#### `config(key, value)`
+#### `fileSet(id)`
+#### `fileSet(id, patterns[, options])`
+#### `run([names])`
+
+## Example
+
+There's no perfect example of a `Moan.js` file since every project is different (that's the point of moan!) but, if
+you're looking for some inspiration, look at our very own `Moan.js` file.
 
 ## Bugs
 

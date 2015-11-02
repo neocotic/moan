@@ -32,7 +32,7 @@ describe('FileSet', () => {
     mockery.registerMock('del', stubDel)
     mockery.registerMock('globby', stubGlobby)
 
-    FileSet = require('../lib/file-set')
+    FileSet = require('../src/FileSet')
   })
 
   afterEach(() => {

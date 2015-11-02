@@ -1,2 +1,17 @@
 #!/usr/bin/env node
-module.exports = require('../lib/cli').parse(process.argv)
+
+/*
+ * moan
+ * https://github.com/neocotic/moan
+ *
+ * Copyright (c) 2015 Alasdair Mercer
+ * Licensed under the MIT license.
+ * https://github.com/neocotic/moan/blob/master/LICENSE.md
+ */
+
+'use strict'
+
+const CommandLineInterface = require('../src/CommandLineInterface')
+
+module.exports = new CommandLineInterface()
+  .parse(process.argv)

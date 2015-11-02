@@ -11,7 +11,7 @@
 
 const EventEmitter = require('events').EventEmitter
 
-const Utils = require('./utils')
+const Utils = require('./Utils')
 
 const createPromiseSymbol = Symbol('createPromise')
 const dependenciesSymbol = Symbol('dependencies')
@@ -30,9 +30,9 @@ const startedSymbol = Symbol('started')
  * A task can declare that it depends on the completion other tasks, however, it's the responsibility of the calling
  * code to ensure that its dependencies are executed prior to executing the task.
  *
- * @public
+ * @access public
  */
-module.exports = class Task extends EventEmitter {
+class Task extends EventEmitter {
 
   /**
    * Creates a new instance of {@link Task} with the specified <code>name</code> and with any optional
@@ -46,7 +46,7 @@ module.exports = class Task extends EventEmitter {
    * @param {string} name - the name of the task
    * @param {string|string[]} [dependencies=[]] - a list of task names that the task depends on
    * @param {taskRunnable} [runnable] - the runnable function that performs the task operation
-   * @public
+   * @access public
    */
   constructor(name, dependencies, runnable) {
     super()
@@ -59,7 +59,7 @@ module.exports = class Task extends EventEmitter {
     /**
      * The name of this {@link Task}.
      *
-     * @private
+     * @access private
      * @type {string}
      */
     this[nameSymbol] = name
@@ -67,7 +67,7 @@ module.exports = class Task extends EventEmitter {
     /**
      * The names of other tasks on which this {@link Task} depends which will be empty if there are none.
      *
-     * @private
+     * @access private
      * @type {string[]}
      */
     this[dependenciesSymbol] = Utils.asArray(dependencies)
@@ -75,7 +75,7 @@ module.exports = class Task extends EventEmitter {
     /**
      * The runnable function that performs the operation (synchronous or asynchronous) for this {@link Task}.
      *
-     * @private
+     * @access private
      * @type {taskRunnable}
      */
     this[runnableSymbol] = typeof runnable === 'function' ? runnable : () => {}
@@ -83,7 +83,7 @@ module.exports = class Task extends EventEmitter {
     /**
      * An error that was encountered during the operation for this {@link Task} that prevented it from completing.
      *
-     * @private
+     * @access private
      * @type {*}
      */
     this[errorSymbol] = null
@@ -91,7 +91,7 @@ module.exports = class Task extends EventEmitter {
     /**
      * Whether the operation for this {@link Task} has finished, regardless of whether it was successful.
      *
-     * @private
+     * @access private
      * @type {boolean}
      */
     this[finishedSymbol] = false
@@ -99,7 +99,7 @@ module.exports = class Task extends EventEmitter {
     /**
      * The result value produced by the operation for this {@link Task}.
      *
-     * @private
+     * @access private
      * @type {*}
      */
     this[resultSymbol] = null
@@ -107,7 +107,7 @@ module.exports = class Task extends EventEmitter {
     /**
      * Whether the operation for this {@link Task} has started.
      *
-     * @private
+     * @access private
      * @type {boolean}
      */
     this[startedSymbol] = false
@@ -118,7 +118,7 @@ module.exports = class Task extends EventEmitter {
    * attempts to support the various method signatures for synchronous or asynchronous operations.
    *
    * @return {Promise} The created <code>Promise</code>.
-   * @private
+   * @access private
    */
   [createPromiseSymbol]() {
     return new Promise((resolve, reject) => {
@@ -159,7 +159,7 @@ module.exports = class Task extends EventEmitter {
    * //=> []
    * moan.task('test').dependencies
    * //=> [ "lint" ]
-   * @public
+   * @access public
    * @type {string[]}
    */
   get dependencies() {
@@ -169,7 +169,7 @@ module.exports = class Task extends EventEmitter {
   /**
    * An error that was encountered during the operation for this {@link Task} that prevented it from completing.
    *
-   * @public
+   * @access public
    * @type {*}
    */
   get error() {
@@ -196,7 +196,7 @@ module.exports = class Task extends EventEmitter {
    * moan.run('compile')
    *   .then(taskHandler)
    *   .catch(taskHandler)
-   * @public
+   * @access public
    * @type {boolean}
    */
   get failed() {
@@ -219,7 +219,7 @@ module.exports = class Task extends EventEmitter {
    * moan.run('compile')
    *   .then(taskHandler)
    *   .catch(taskHandler)
-   * @public
+   * @access public
    * @type {boolean}
    */
   get finished() {
@@ -229,7 +229,7 @@ module.exports = class Task extends EventEmitter {
   /**
    * The name of this {@link Task}.
    *
-   * @public
+   * @access public
    * @type {string}
    */
   get name() {
@@ -265,7 +265,7 @@ module.exports = class Task extends EventEmitter {
    *   })
    * })
    * @throws {Error} If this {@link Task} has not finished running.
-   * @public
+   * @access public
    * @type {*}
    */
   get result() {
@@ -285,7 +285,7 @@ module.exports = class Task extends EventEmitter {
    * can be called more than once but will always return the same <code>Promise</code>.
    *
    * @return {Promise} The <code>Promise</code> for tracking the task operaton progress.
-   * @public
+   * @access public
    */
   run() {
     if (!this[promiseSymbol]) {
@@ -318,7 +318,7 @@ module.exports = class Task extends EventEmitter {
   /**
    * The runnable function that performs the operation (synchronous or asynchronous) for this {@link Task}.
    *
-   * @public
+   * @access public
    * @type {taskRunnable}
    */
   get runnable() {
@@ -343,13 +343,15 @@ module.exports = class Task extends EventEmitter {
    * //=> true
    * moan.task('build').started
    * //=> false
-   * @public
+   * @access public
    * @type {boolean}
    */
   get started() {
     return this[startedSymbol]
   }
 }
+
+module.exports = Task
 
 /**
  * A function that performs the operation of a {@link Task} which is executed when {@link Task#run()} is invoked.

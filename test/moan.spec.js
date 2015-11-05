@@ -249,6 +249,69 @@ describe('Moan', () => {
     })
   })
 
+  describe('#hasFailures', () => {
+    it('should return false if all tasks complete successfully', (done) => {
+      moan.task('foo', [])
+      moan.task('default', 'foo')
+
+      moan.run()
+        .then(() => {
+          expect(moan.hasFailures()).to.be(false)
+        })
+        .then(done, done)
+    })
+
+    it('should return true if a task fails to complete', (done) => {
+      moan.task('foo', () => Promise.reject('Oops!'))
+      moan.task('default', 'foo')
+
+      moan.run()
+        .then(() => {
+          expect().fail('Should have been rejected')
+        })
+        .catch(() => {
+          expect(moan.hasFailures()).to.be(true)
+        })
+        .then(done, done)
+    })
+
+    context('when the "force" option is enabled', () => {
+      it('should return false if all tasks complete successfully', (done) => {
+        moan.force = true
+
+        moan.task('foo', [])
+        moan.task('default', 'foo')
+
+        moan.run()
+          .then(() => {
+            expect(moan.hasFailures()).to.be(false)
+          })
+          .then(done, done)
+      })
+
+      it('should return true if at least one task fails to complete', (done) => {
+        moan.force = true
+
+        moan.task('foo', () => Promise.reject('Oops!'))
+        moan.task('default', 'foo')
+
+        moan.run()
+          .then(() => {
+            expect(moan.hasFailures()).to.be(true)
+          })
+          .then(done, done)
+      })
+    })
+
+    context('when no tasks have been executed', () => {
+      it('should act the same as if none have failed', () => {
+        moan.task('default', () => Promise.reject())
+
+        expect(moan.hasFailures()).to.be(false)
+      })
+    })
+  })
+
   describe('#run', () => {
     it('should run all named tasks and their dependencies', (done) => {
       let stack = []

@@ -271,6 +271,19 @@ class Moan extends EventEmitter {
   }
 
   /**
+   * Returns whether any registered {@link Task} has failed to run successfully.
+   *
+   * This method will return <code>false</code> even if no tasks have been executed.
+   *
+   * @return {boolean} <code>true</code> if at least one {@link Task} failed to completed; otherwise
+   * <code>false</code>.
+   * @access private
+   */
+  hasFailures() {
+    return Array.from(this[tasksSymbol].values()).some((task) => task.failed)
+  }
+
+  /**
    * Runs all of the tasks with the given <code>names</code>, returning a <code>Promise</code> which will be fullfilled
    * once all of the tasks and their dependencies have been executed or rejected if any of the them fail to execute.
    *

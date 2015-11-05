@@ -27,7 +27,7 @@ You'll need to have at least [Node.js](https://nodejs.org) v4 installed.
 
 ## Usage
 
-All you need is a `Moan.js` file in your project directory and you can start building with moan.
+All you need is a `Moaning.js` file in your project directory and you can start building with moan.
 
 ### CLI
 
@@ -40,7 +40,7 @@ Here's how to use the `moan` command:
       -h, --help         output usage information
       -V, --version      output the version number
       -d, --debug        enable debug output
-      -f, --file [name]  specify alternative name for the Moan file
+      -f, --file [name]  specify alternative name for the Moaning file
       --force            force tasks to run even after errors
       -l, --list         list all available tasks
       --no-color         disable color output
@@ -48,7 +48,7 @@ Here's how to use the `moan` command:
 
 ### API
 
-Here's how you can interact in your `Moan.js` file but take a look at the code to see all that's available.
+Here's how you can interact in your `Moaning.js` file but take a look at the code to see all that's available.
 
 #### `task(name)`
 #### `task(name[, dependencies][, runnable])`
@@ -60,8 +60,12 @@ Here's how you can interact in your `Moan.js` file but take a look at the code t
 
 ## Example
 
-There's no perfect example of a `Moan.js` file since every project is different (that's the point of moan!) but, if
-you're looking for some inspiration, look at our very own `Moan.js` file.
+There's no perfect example of a `Moaning.js` file since every project is different (that's the point of moan!) but, if
+you're looking for some inspiration, look at our very own `Moaning.js` file.
+
+Just keep in mind that you can't use a globally installed `moan` to execute our `Moaning.js` file since it uses the
+project internals to build itself (see [CONTRIBUTING.md](https://github.com/neocotic/moan/blob/master/CONTRIBUTING.md)
+for more information and alternative approach).
 
 ## Bugs
 

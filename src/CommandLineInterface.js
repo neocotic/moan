@@ -16,12 +16,16 @@ const fs = require('fs')
 const moment = require('moment')
 const numeral = require('numeral')
 const path = require('path')
+const resolveModule = require('resolve')
 
-const moan = require('..')
+const globalMoan = require('..')
 const Utils = require('./Utils')
 
 const commandSymbol = Symbol('command')
+const errorHandledSymbol = Symbol('errorHandled')
 const finalizeSymbol = Symbol('finalize')
+const handleErrorSymbol = Symbol('handleError')
+const localSymbol = Symbol('local')
 const moanSymbol = Symbol('moan')
 
 /**
@@ -55,42 +59,14 @@ class CommandLineInterface {
      * @type {Command}
      */
     this[commandSymbol] = new Command()
-      .version(this[moanSymbol].version)
       .usage('[options] <task ...>')
+      .version(this[moanSymbol].version)
       .option('-d, --debug', 'enable debug output')
-      .option('-f, --file [name]', 'specify alternative name for the Moan file')
+      .option('-f, --file [name]', 'specify alternative name for the Moaning file')
       .option('--force', 'force tasks to run even after errors')
       .option('-l, --list', 'list all available tasks')
       .option('--no-color', 'disable color output')
       .option('--stack', 'print stack traces for errors')
-
-    this[moanSymbol]
-      .on('start', () => {
-        this[moanSymbol].log.writeln('Running...')
-      })
-      .on('done', () => {
-        this[moanSymbol].log.ok()
-      })
-      .on('error', (name, error) => {
-        if (error.message) {
-          this[moanSymbol].log.error(error.message)
-        } else {
-          this[moanSymbol].log.error(error)
-        }
-
-        if (error.stack && this[commandSymbol].stack) {
-          let stack = error.stack
-            .split('\n')
-            .splice(1)
-            .join('\n')
-
-          this[moanSymbol].log.write(`${stack}\n`)
-        }
-
-        if (!this[commandSymbol].stack) {
-          this[moanSymbol].log.writeln('Use the --stack option to print stack traces for errors to help debug problems')
-        }
-      })
   }
 
   /**
@@ -105,24 +81,67 @@ class CommandLineInterface {
     let memory = process.memoryUsage()
 
     if (error) {
-      if (!this[commandSymbol].force) {
-        this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
-      }
+      this[handleErrorSymbol](error)
 
       if (this[moanSymbol].currentTask) {
+        if (!this[commandSymbol].force) {
+          this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
+        }
+
         this[moanSymbol].log.writeln(chalk.bgRed.bold('Aborted!'))
       }
+    }
+
+    let result = 'BUILD '
+    if (error) {
+      result += 'FAILED'
+    } else {
+      result += `SUCCESS${this[moanSymbol].hasFailures() ? ' (WITH ERRORS)' : ''}`
     }
 
     this[moanSymbol].log
       .write('\n')
       .separator()
-      .write(chalk.bold(`BUILD ${error ? 'FAILED' : 'SUCCESS'}`))
+      .write(chalk.bold(result))
       .write('\n')
       .separator()
       .write(`Total time: ${moment.utc(end.diff(start)).format('HH:mm:ss:SSS')}\n`)
       .write(`Finished at: ${end.format('ddd MMM DD HH:mm:SS z YYYY')}\n`)
       .write(`Final memory: ${numeral(memory.heapUsed).format('0b')}/${numeral(memory.heapTotal).format('0b')}\n`)
+  }
+
+  /**
+   * Handles the specified <code>error</code> which has been encountered.
+   *
+   * This method will only handle <code>error</code> once to ensure that the high-level catch doesn't handle it again,
+   * resulting it duplicate logs.
+   *
+   * @param {Error} error - the <code>Error</code> to be handled
+   * @access private
+   */
+  [handleErrorSymbol](error) {
+    if (!error[errorHandledSymbol]) {
+      error[errorHandledSymbol] = true
+
+      if (error.message) {
+        this[moanSymbol].log.error(error.message)
+      } else {
+        this[moanSymbol].log.error(error)
+      }
+
+      if (error.stack && this[commandSymbol].stack) {
+        let stack = error.stack
+          .split('\n')
+          .splice(1)
+          .join('\n')
+
+        this[moanSymbol].log.write(`${stack}\n`)
+      }
+
+      if (!this[commandSymbol].stack) {
+        this[moanSymbol].log.writeln('Use the --stack option to print stack traces for errors to help debug problems')
+      }
+    }
   }
 
   /**
@@ -143,33 +162,55 @@ class CommandLineInterface {
   }
 
   /**
-   * Attempts to load the Moan file from the current working directory or one of its ancestors and, as a result, the
-   * working directory will be changed to that which contains the Moan file.
+   * Attempts to load the Moaning file from the current working directory or one of its ancestors and, as a result, the
+   * working directory will be changed to that which contains the Moaning file.
    *
-   * This method returns a <code>Promise</code> which is resolved only when a Moan file is found and loaded
-   * successfully but may be rejected if the Moan file could not be found or is invalid.
+   * This method returns a <code>Promise</code> which is resolved only when a Moaning file is found and loaded
+   * successfully but may be rejected if the Moaning file could not be found or is invalid.
    *
-   * @return {Promise} The <code>Promise</code> for tracking finding and loading the Moan file.
+   * @return {Promise} The <code>Promise</code> for tracking finding and loading the Moaning file.
    * @access public
    */
   load() {
     return new Promise((resolve, reject) => {
-      let moanFile = this[commandSymbol].file || findup('Moan.js', { nocase: true })
-      if (!moanFile) {
-        throw new Error(`Unable to find ${path.basename(moanFile)} file`)
+      let moaningFile = this[commandSymbol].file || findup('Moaning.js', { nocase: true })
+      if (!moaningFile) {
+        throw new Error(`Unable to find ${path.basename(moaningFile)} file`)
       }
 
-      fs.stat(moanFile, (error, stat) => {
+      fs.stat(moaningFile, (error, stat) => {
         if (error) {
-          reject(`Unable to find file: ${moanFile}`)
+          reject(`Unable to find file: ${moaningFile}`)
         } else if (!stat.isFile()) {
-          reject(`Not a valid file: ${moanFile}`)
+          reject(`Not a valid file: ${moaningFile}`)
         } else {
-          process.chdir(path.dirname(moanFile))
-          require(path.resolve(moanFile))
+          process.chdir(path.dirname(moaningFile))
+          require(path.resolve(moaningFile))
 
-          resolve(moanFile)
+          resolve(moaningFile)
         }
+      })
+    })
+  }
+
+  /**
+   * Loads the local Moan module relative to the current working directory.
+   *
+   * This method will fall back on global Moan module (this one) if none could be found locally.
+   *
+   * @return {Promise} The <code>Promise</code> for tracking the module loading.
+   * @access private
+   */
+  [localSymbol]() {
+    return new Promise((resolve) => {
+      resolveModule('moan', { basedir: process.cwd() }, (error, moan) => {
+        if (error) {
+          this[moanSymbol].log.warn('Could not find local "moan" module so falling back to global module')
+
+          moan = this[moanSymbol]
+        }
+
+        resolve(moan)
       })
     })
   }
@@ -184,19 +225,36 @@ class CommandLineInterface {
   parse(args) {
     args = Utils.asArray(args)
 
-    let command = this[commandSymbol].parse(args)
     let start = moment.utc()
 
-    this[moanSymbol].color = !command.noColor
-    this[moanSymbol].debug = command.debug
-    this[moanSymbol].force = command.force
+    this[commandSymbol].parse(args)
 
-    this.load()
+    this[localSymbol]()
+      .then((moan) => {
+        this[moanSymbol] = moan
+
+        moan.color = !this[commandSymbol].noColor
+        moan.debug = this[commandSymbol].debug
+        moan.force = this[commandSymbol].force
+
+        moan
+          .on('start', () => {
+            moan.log.writeln('Running...')
+          })
+          .on('done', () => {
+            moan.log.ok()
+          })
+          .on('error', (name, error) => {
+            this[handleErrorSymbol](error)
+          })
+
+        return this.load()
+      })
       .then(() => {
-        if (command.list) {
+        if (this[commandSymbol].list) {
           this.list()
         } else {
-          return this[moanSymbol].run(command.args)
+          return this[moanSymbol].run(this[commandSymbol].args)
         }
       })
       .then(() => {
@@ -216,7 +274,7 @@ class CommandLineInterface {
  * @property {Moan} [moan] - the {@link Moan} instance to be used
  */
 CommandLineInterface.defaults = {
-  moan
+  moan: globalMoan
 }
 
 module.exports = CommandLineInterface

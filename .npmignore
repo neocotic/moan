@@ -1,4 +1,6 @@
+task/
 test/
+
 .editorconfig
 .eslintignore
 .eslintrc
@@ -6,5 +8,7 @@ test/
 .gitignore
 .npmignore
 .travis.yml
+
 *.md
-Moan.js
+
+Moaning.js

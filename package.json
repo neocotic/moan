@@ -1,6 +1,6 @@
 {
   "name": "moan",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple task-based JavaScript build system",
   "keywords": [
     "task",
@@ -36,11 +36,12 @@
     "findup-sync": "^0.3.0",
     "globby": "^3.0.1",
     "moment": "^2.10.6",
-    "numeral": "^1.5.3"
+    "numeral": "^1.5.3",
+    "resolve": "^1.1.6"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
-    "eslint": "^1.6.0",
+    "eslint": "^1.8.0",
     "expect.js": "^0.3.1",
     "istanbul": "^0.4.0",
     "mkdirp-promise": "^1.0.3",
@@ -48,7 +49,7 @@
     "mocha-istanbul": "^0.2.0",
     "mockery": "^1.4.0",
     "ncp": "^2.0.0",
-    "sinon": "^1.17.1"
+    "sinon": "^1.17.2"
   },
   "engines": {
     "node": ">=4.0"

@@ -16,14 +16,16 @@ const fs = require('fs')
 const moment = require('moment')
 const numeral = require('numeral')
 const path = require('path')
+const resolveModule = require('resolve')
 
-const moan = require('..')
+const globalMoan = require('..')
 const Utils = require('./Utils')
 
 const commandSymbol = Symbol('command')
 const errorHandledSymbol = Symbol('errorHandled')
 const finalizeSymbol = Symbol('finalize')
 const handleErrorSymbol = Symbol('handleError')
+const localSymbol = Symbol('local')
 const moanSymbol = Symbol('moan')
 
 /**
@@ -57,25 +59,14 @@ class CommandLineInterface {
      * @type {Command}
      */
     this[commandSymbol] = new Command()
-      .version(this[moanSymbol].version)
       .usage('[options] <task ...>')
+      .version(this[moanSymbol].version)
       .option('-d, --debug', 'enable debug output')
       .option('-f, --file [name]', 'specify alternative name for the Moaning file')
       .option('--force', 'force tasks to run even after errors')
       .option('-l, --list', 'list all available tasks')
       .option('--no-color', 'disable color output')
       .option('--stack', 'print stack traces for errors')
-
-    this[moanSymbol]
-      .on('start', () => {
-        this[moanSymbol].log.writeln('Running...')
-      })
-      .on('done', () => {
-        this[moanSymbol].log.ok()
-      })
-      .on('error', (name, error) => {
-        this[handleErrorSymbol](error)
-      })
   }
 
   /**
@@ -90,7 +81,15 @@ class CommandLineInterface {
     let memory = process.memoryUsage()
 
     if (error) {
-      this[handleErrorSymbol](error, true)
+      this[handleErrorSymbol](error)
+
+      if (this[moanSymbol].currentTask) {
+        if (!this[commandSymbol].force) {
+          this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
+        }
+
+        this[moanSymbol].log.writeln(chalk.bgRed.bold('Aborted!'))
+      }
     }
 
     let result = 'BUILD '
@@ -117,14 +116,10 @@ class CommandLineInterface {
    * This method will only handle <code>error</code> once to ensure that the high-level catch doesn't handle it again,
    * resulting it duplicate logs.
    *
-   * If the <code>finished</code> flag is enabled and <code>error</code> was the result of a task failure, additional
-   * output will be logged.
-   *
    * @param {Error} error - the <code>Error</code> to be handled
-   * @param {boolean} [finished=false] - <code>true</code> if task handling has finished; otherwise <code>false</code>
    * @access private
    */
-  [handleErrorSymbol](error, finished) {
+  [handleErrorSymbol](error) {
     if (!error[errorHandledSymbol]) {
       error[errorHandledSymbol] = true
 
@@ -146,14 +141,6 @@ class CommandLineInterface {
       if (!this[commandSymbol].stack) {
         this[moanSymbol].log.writeln('Use the --stack option to print stack traces for errors to help debug problems')
       }
-    }
-
-    if (finished && this[moanSymbol].currentTask) {
-      if (!this[commandSymbol].force) {
-        this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
-      }
-
-      this[moanSymbol].log.writeln(chalk.bgRed.bold('Aborted!'))
     }
   }
 
@@ -207,6 +194,28 @@ class CommandLineInterface {
   }
 
   /**
+   * Loads the local Moan module relative to the current working directory.
+   *
+   * This method will fall back on global Moan module (this one) if none could be found locally.
+   *
+   * @return {Promise} The <code>Promise</code> for tracking the module loading.
+   * @access private
+   */
+  [localSymbol]() {
+    return new Promise((resolve) => {
+      resolveModule('moan', { basedir: process.cwd() }, (error, moan) => {
+        if (error) {
+          this[moanSymbol].log.warn('Could not find local "moan" module so falling back to global module')
+
+          moan = this[moanSymbol]
+        }
+
+        resolve(moan)
+      })
+    })
+  }
+
+  /**
    * Parses the specified command-line arguments and invokes the necessary action(s) as a result.
    *
    * @param {string|string[]} [args=[]] - the command-line arguments to be parsed
@@ -216,19 +225,36 @@ class CommandLineInterface {
   parse(args) {
     args = Utils.asArray(args)
 
-    let command = this[commandSymbol].parse(args)
     let start = moment.utc()
 
-    this[moanSymbol].color = !command.noColor
-    this[moanSymbol].debug = command.debug
-    this[moanSymbol].force = command.force
+    this[commandSymbol].parse(args)
 
-    this.load()
+    this[localSymbol]()
+      .then((moan) => {
+        this[moanSymbol] = moan
+
+        moan.color = !this[commandSymbol].noColor
+        moan.debug = this[commandSymbol].debug
+        moan.force = this[commandSymbol].force
+
+        moan
+          .on('start', () => {
+            moan.log.writeln('Running...')
+          })
+          .on('done', () => {
+            moan.log.ok()
+          })
+          .on('error', (name, error) => {
+            this[handleErrorSymbol](error)
+          })
+
+        return this.load()
+      })
       .then(() => {
-        if (command.list) {
+        if (this[commandSymbol].list) {
           this.list()
         } else {
-          return this[moanSymbol].run(command.args)
+          return this[moanSymbol].run(this[commandSymbol].args)
         }
       })
       .then(() => {
@@ -248,7 +274,7 @@ class CommandLineInterface {
  * @property {Moan} [moan] - the {@link Moan} instance to be used
  */
 CommandLineInterface.defaults = {
-  moan
+  moan: globalMoan
 }
 
 module.exports = CommandLineInterface

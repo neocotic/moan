@@ -36,7 +36,8 @@
     "findup-sync": "^0.3.0",
     "globby": "^3.0.1",
     "moment": "^2.10.6",
-    "numeral": "^1.5.3"
+    "numeral": "^1.5.3",
+    "resolve": "^1.1.6"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",

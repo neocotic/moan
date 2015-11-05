@@ -63,6 +63,10 @@ Here's how you can interact in your `Moaning.js` file but take a look at the cod
 There's no perfect example of a `Moaning.js` file since every project is different (that's the point of moan!) but, if
 you're looking for some inspiration, look at our very own `Moaning.js` file.
 
+Just keep in mind that you can't use a globally installed `moan` to execute our `Moaning.js` file since it uses the
+project internals to build itself (see [CONTRIBUTING.md](https://github.com/neocotic/moan/blob/master/CONTRIBUTING.md)
+for more information and alternative approach).
+
 ## Bugs
 
 If you have any problems with this tool or would like to see changes currently in development you can do so

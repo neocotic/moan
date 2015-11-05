@@ -13,6 +13,7 @@ const CLIEngine = require('eslint').CLIEngine
 const path = require('path')
 
 const moan = require('..')
+const Utils = require('../src/Utils')
 
 module.exports = () => {
   return moan.fileSet('lintFiles')
@@ -38,7 +39,7 @@ module.exports = () => {
       }
 
       if (report.errorCount > 0) {
-        throw new Error(`${report.errorCount} lint errors were found`)
+        throw new Error(`${report.errorCount} lint error${Utils.plural(report.errorCount)} found`)
       }
     })
 }

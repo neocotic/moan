@@ -16,7 +16,7 @@ $ npm install
 $ npm test
 ```
 
-The only dependency here is just [node.js](https://nodejs.org).
+The only dependency here is just [Node.js](https://nodejs.org) v4. Earlier versions *will not work!*
 
 Use the same coding style as the rest of the code base.
 

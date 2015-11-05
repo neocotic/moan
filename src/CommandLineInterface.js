@@ -112,10 +112,16 @@ class CommandLineInterface {
   }
 
   /**
-   * TODO: Document
+   * Handles the specified <code>error</code> which has been encountered.
    *
-   * @param {Error} error -
-   * @param {boolean} [finished=false] -
+   * This method will only handle <code>error</code> once to ensure that the high-level catch doesn't handle it again,
+   * resulting it duplicate logs.
+   *
+   * If the <code>finished</code> flag is enabled and <code>error</code> was the result of a task failure, additional
+   * output will be logged.
+   *
+   * @param {Error} error - the <code>Error</code> to be handled
+   * @param {boolean} [finished=false] - <code>true</code> if task handling has finished; otherwise <code>false</code>
    * @access private
    */
   [handleErrorSymbol](error, finished) {

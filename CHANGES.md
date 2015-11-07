@@ -1,3 +1,8 @@
+## Version 0.1.3, 2015.11.07
+
+* **cli:** `moan` should emit the correct exit code depending on the execution result [#14](https://github.com/neocotic/moan/issues/14)
+* **cli:** `FileSet` should propagate errors from `del` and `globby` modules [#15](https://github.com/neocotic/moan/issues/15)
+
 ## Version 0.1.2, 2015.11.07
 
 * **cli:** Fix broken `--list` option [#4](https://github.com/neocotic/moan/issues/4)

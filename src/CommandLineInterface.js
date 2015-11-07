@@ -243,7 +243,7 @@ class CommandLineInterface {
 
     this[applyOptionsSymbol]()
 
-    this[localSymbol]()
+    return this[localSymbol]()
       .then((moan) => {
         this[moanSymbol] = moan
 

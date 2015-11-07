@@ -229,13 +229,17 @@ class CommandLineInterface {
 
     this[commandSymbol].parse(args)
 
+    globalMoan.color = !!this[commandSymbol].color
+    globalMoan.debug = !!this[commandSymbol].debug
+    globalMoan.force = !!this[commandSymbol].force
+
     this[localSymbol]()
       .then((moan) => {
         this[moanSymbol] = moan
 
-        moan.color = !this[commandSymbol].noColor
-        moan.debug = this[commandSymbol].debug
-        moan.force = this[commandSymbol].force
+        moan.color = globalMoan.color
+        moan.debug = globalMoan.debug
+        moan.force = globalMoan.force
 
         moan
           .on('start', () => {

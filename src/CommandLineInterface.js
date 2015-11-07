@@ -233,16 +233,16 @@ class CommandLineInterface {
 
       this[moanSymbol].log.debug(`Trying to resolve local "moan" module within directory: ${cwd}`)
 
-      resolveModule('moan', { basedir: cwd }, (error, moan) => {
+      resolveModule('moan', { basedir: cwd }, (error, modulePath) => {
         if (error) {
           this[moanSymbol].log.warn('Could not find local "moan" module so falling back to global module')
 
-          moan = this[moanSymbol]
+          resolve(this[moanSymbol])
         } else {
-          this[moanSymbol].log.debug(`Local "moan" module found: ${moan}`)
-        }
+          this[moanSymbol].log.debug(`Local "moan" module found: ${modulePath}`)
 
-        resolve(moan)
+          resolve(require(modulePath))
+        }
       })
     })
   }

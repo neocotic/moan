@@ -21,11 +21,13 @@ const resolveModule = require('resolve')
 const globalMoan = require('..')
 const Utils = require('./Utils')
 
+const applyOptionsSymbol = Symbol('applyOptions')
 const commandSymbol = Symbol('command')
 const errorHandledSymbol = Symbol('errorHandled')
 const finalizeSymbol = Symbol('finalize')
 const handleErrorSymbol = Symbol('handleError')
 const localSymbol = Symbol('local')
+const loggedOptionsSymbol = Symbol('loggedOptions')
 const moanSymbol = Symbol('moan')
 
 /**
@@ -70,6 +72,31 @@ class CommandLineInterface {
   }
 
   /**
+   * Applies the parsed options from the <code>Command</code> to the current {@link Moan} instance.
+   *
+   * @access private
+   */
+  [applyOptionsSymbol]() {
+    let color = !!this[commandSymbol].color
+    let debug = !!this[commandSymbol].debug
+    let force = !!this[commandSymbol].force
+
+    this[moanSymbol].color = color
+    this[moanSymbol].debug = debug
+    this[moanSymbol].force = force
+
+    if (!this[loggedOptionsSymbol]) {
+      this[loggedOptionsSymbol] = true
+
+      this[moanSymbol].log
+        .debug('The following options have been used:')
+        .debug(`color: ${color}`)
+        .debug(`debug: ${debug}`)
+        .debug(`force: ${force}`)
+    }
+  }
+
+  /**
    * Finishes up by logging some useful statistics about the overall execution.
    *
    * @param {Moment} start - the moment on which the CLI was executed
@@ -79,18 +106,6 @@ class CommandLineInterface {
   [finalizeSymbol](start, error) {
     let end = moment.utc()
     let memory = process.memoryUsage()
-
-    if (error) {
-      this[handleErrorSymbol](error)
-
-      if (this[moanSymbol].currentTask) {
-        if (!this[commandSymbol].force) {
-          this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
-        }
-
-        this[moanSymbol].log.writeln(chalk.bgRed.bold('Aborted!'))
-      }
-    }
 
     let result = 'BUILD '
     if (error) {
@@ -150,12 +165,12 @@ class CommandLineInterface {
    * @access public
    */
   list() {
-    let tasks = this[moanSymbol].names()
+    this[moanSymbol].log.debug('Logging available tasks for "list" option')
 
-    if (tasks.length) {
+    if (this[moanSymbol].tasks.length) {
       this[moanSymbol].log.writeln('The following tasks are available:\n')
 
-      tasks.forEach((task) => this[moanSymbol].log.writeln(task))
+      this[moanSymbol].tasks.forEach((task) => this[moanSymbol].log.writeln(task))
     } else {
       this[moanSymbol].log.writeln('No tasks were found')
     }
@@ -173,10 +188,14 @@ class CommandLineInterface {
    */
   load() {
     return new Promise((resolve, reject) => {
+      this[moanSymbol].log.debug('Trying to load Moaning file')
+
       let moaningFile = this[commandSymbol].file || findup('Moaning.js', { nocase: true })
       if (!moaningFile) {
         throw new Error(`Unable to find ${path.basename(moaningFile)} file`)
       }
+
+      this[moanSymbol].log.debug(`Found Moaning file: ${moaningFile}`)
 
       fs.stat(moaningFile, (error, stat) => {
         if (error) {
@@ -184,7 +203,14 @@ class CommandLineInterface {
         } else if (!stat.isFile()) {
           reject(`Not a valid file: ${moaningFile}`)
         } else {
-          process.chdir(path.dirname(moaningFile))
+          let moaningDirectory = path.dirname(moaningFile)
+
+          this[moanSymbol].log.debug(`Changing directory that which contains the Moaning file: ${moaningDirectory}`)
+
+          process.chdir(moaningDirectory)
+
+          this[moanSymbol].log.debug(`Loading Moaning file: ${moaningFile}`)
+
           require(path.resolve(moaningFile))
 
           resolve(moaningFile)
@@ -203,14 +229,20 @@ class CommandLineInterface {
    */
   [localSymbol]() {
     return new Promise((resolve) => {
-      resolveModule('moan', { basedir: process.cwd() }, (error, moan) => {
+      let cwd = process.cwd()
+
+      this[moanSymbol].log.debug(`Trying to resolve local "moan" module within directory: ${cwd}`)
+
+      resolveModule('moan', { basedir: cwd }, (error, modulePath) => {
         if (error) {
           this[moanSymbol].log.warn('Could not find local "moan" module so falling back to global module')
 
-          moan = this[moanSymbol]
-        }
+          resolve(this[moanSymbol])
+        } else {
+          this[moanSymbol].log.debug(`Local "moan" module found: ${modulePath}`)
 
-        resolve(moan)
+          resolve(require(modulePath))
+        }
       })
     })
   }
@@ -225,17 +257,18 @@ class CommandLineInterface {
   parse(args) {
     args = Utils.asArray(args)
 
+    let build = false
     let start = moment.utc()
 
     this[commandSymbol].parse(args)
 
-    this[localSymbol]()
+    this[applyOptionsSymbol]()
+
+    return this[localSymbol]()
       .then((moan) => {
         this[moanSymbol] = moan
 
-        moan.color = !this[commandSymbol].noColor
-        moan.debug = this[commandSymbol].debug
-        moan.force = this[commandSymbol].force
+        this[applyOptionsSymbol]()
 
         moan
           .on('start', () => {
@@ -254,14 +287,30 @@ class CommandLineInterface {
         if (this[commandSymbol].list) {
           this.list()
         } else {
+          build = true
+
           return this[moanSymbol].run(this[commandSymbol].args)
         }
       })
       .then(() => {
-        this[finalizeSymbol](start)
+        if (build) {
+          this[finalizeSymbol](start)
+        }
       })
       .catch((error) => {
-        this[finalizeSymbol](start, error)
+        this[handleErrorSymbol](error)
+
+        if (this[moanSymbol].currentTask) {
+          if (!this[commandSymbol].force) {
+            this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
+          }
+
+          this[moanSymbol].log.writeln(chalk.bgRed.bold('Aborted!'))
+        }
+
+        if (build) {
+          this[finalizeSymbol](start, error)
+        }
       })
   }
 }

@@ -16,11 +16,11 @@ $ npm install
 $ npm test
 ```
 
-The only dependency here is just [Node.js](https://nodejs.org) v4. Earlier versions *will not work!*
+The only dependency here is just [Node.js](https://nodejs.org) v4 or later. Earlier versions *will not work!*
 
 If you have installed `moan` globally, unfortunately, you can't use it to execute our `Moaning.js` file since it uses
 the project internal `Moan` singleton instead of one from a `moan` dependency when building itself. Alternatively, you
-can simply use `bin\moan` instead (or `node bin\moan` if you're on Windows).
+can simply use `bin/moan` instead (or `node bin\moan` if you're on Windows).
 
 Use the same coding style as the rest of the code base.
 

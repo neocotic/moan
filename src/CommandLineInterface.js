@@ -255,6 +255,7 @@ class CommandLineInterface {
    * @access public
    */
   parse(args) {
+    /* eslint "no-process-exit": 0 */
     args = Utils.asArray(args)
 
     let build = false
@@ -296,6 +297,8 @@ class CommandLineInterface {
         if (build) {
           this[finalizeSymbol](start)
         }
+
+        process.exit(0)
       })
       .catch((error) => {
         this[handleErrorSymbol](error)
@@ -311,6 +314,8 @@ class CommandLineInterface {
         if (build) {
           this[finalizeSymbol](start, error)
         }
+
+        process.exit(1)
       })
   }
 }

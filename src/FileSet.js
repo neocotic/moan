@@ -72,6 +72,8 @@ class FileSet extends EventEmitter {
       })
       .catch((error) => {
         this.emit('error', error)
+
+        return Promise.reject(error)
       })
   }
 
@@ -144,6 +146,8 @@ class FileSet extends EventEmitter {
       })
       .catch((error) => {
         this.emit('error', error)
+
+        return Promise.reject(error)
       })
   }
 

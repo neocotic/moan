@@ -23,7 +23,7 @@ $ npm install -g moan
 
 Now you can use the `moan` command *anywhere!*
 
-You'll need to have at least [Node.js](https://nodejs.org) v4 installed.
+You'll need to have at least [Node.js](https://nodejs.org) v4 or later installed.
 
 ## Usage
 

@@ -1,6 +1,6 @@
 {
   "name": "moan",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Simple task-based JavaScript build system",
   "keywords": [
     "task",

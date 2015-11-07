@@ -80,18 +80,6 @@ class CommandLineInterface {
     let end = moment.utc()
     let memory = process.memoryUsage()
 
-    if (error) {
-      this[handleErrorSymbol](error)
-
-      if (this[moanSymbol].currentTask) {
-        if (!this[commandSymbol].force) {
-          this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
-        }
-
-        this[moanSymbol].log.writeln(chalk.bgRed.bold('Aborted!'))
-      }
-    }
-
     let result = 'BUILD '
     if (error) {
       result += 'FAILED'
@@ -150,12 +138,10 @@ class CommandLineInterface {
    * @access public
    */
   list() {
-    let tasks = this[moanSymbol].names()
-
-    if (tasks.length) {
+    if (this[moanSymbol].tasks.length) {
       this[moanSymbol].log.writeln('The following tasks are available:\n')
 
-      tasks.forEach((task) => this[moanSymbol].log.writeln(task))
+      this[moanSymbol].tasks.forEach((task) => this[moanSymbol].log.writeln(task))
     } else {
       this[moanSymbol].log.writeln('No tasks were found')
     }
@@ -225,6 +211,7 @@ class CommandLineInterface {
   parse(args) {
     args = Utils.asArray(args)
 
+    let build = false
     let start = moment.utc()
 
     this[commandSymbol].parse(args)
@@ -258,14 +245,30 @@ class CommandLineInterface {
         if (this[commandSymbol].list) {
           this.list()
         } else {
+          build = true
+
           return this[moanSymbol].run(this[commandSymbol].args)
         }
       })
       .then(() => {
-        this[finalizeSymbol](start)
+        if (build) {
+          this[finalizeSymbol](start)
+        }
       })
       .catch((error) => {
-        this[finalizeSymbol](start, error)
+        this[handleErrorSymbol](error)
+
+        if (this[moanSymbol].currentTask) {
+          if (!this[commandSymbol].force) {
+            this[moanSymbol].log.writeln('Use the --force option to continue running tasks even after an error')
+          }
+
+          this[moanSymbol].log.writeln(chalk.bgRed.bold('Aborted!'))
+        }
+
+        if (build) {
+          this[finalizeSymbol](start, error)
+        }
       })
   }
 }

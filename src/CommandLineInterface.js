@@ -21,11 +21,13 @@ const resolveModule = require('resolve')
 const globalMoan = require('..')
 const Utils = require('./Utils')
 
+const applyOptionsSymbol = Symbol('applyOptions')
 const commandSymbol = Symbol('command')
 const errorHandledSymbol = Symbol('errorHandled')
 const finalizeSymbol = Symbol('finalize')
 const handleErrorSymbol = Symbol('handleError')
 const localSymbol = Symbol('local')
+const loggedOptionsSymbol = Symbol('loggedOptions')
 const moanSymbol = Symbol('moan')
 
 /**
@@ -67,6 +69,29 @@ class CommandLineInterface {
       .option('-l, --list', 'list all available tasks')
       .option('--no-color', 'disable color output')
       .option('--stack', 'print stack traces for errors')
+  }
+
+  /**
+   * Applies the parsed options from the <code>Command</code> to the current {@link Moan} instance.
+   *
+   * @access private
+   */
+  [applyOptionsSymbol]() {
+    let color = !!this[commandSymbol].color
+    let debug = !!this[commandSymbol].debug
+    let force = !!this[commandSymbol].force
+
+    this[moanSymbol].color = color
+    this[moanSymbol].debug = debug
+    this[moanSymbol].force = force
+
+    if (!this[loggedOptionsSymbol]) {
+      this[loggedOptionsSymbol] = true
+
+      this[moanSymbol].log.debug(`color option: ${color}`)
+      this[moanSymbol].log.debug(`debug option: ${debug}`)
+      this[moanSymbol].log.debug(`force option: ${force}`)
+    }
   }
 
   /**
@@ -216,17 +241,13 @@ class CommandLineInterface {
 
     this[commandSymbol].parse(args)
 
-    globalMoan.color = !!this[commandSymbol].color
-    globalMoan.debug = !!this[commandSymbol].debug
-    globalMoan.force = !!this[commandSymbol].force
+    this[applyOptionsSymbol]()
 
     this[localSymbol]()
       .then((moan) => {
         this[moanSymbol] = moan
 
-        moan.color = globalMoan.color
-        moan.debug = globalMoan.debug
-        moan.force = globalMoan.force
+        this[applyOptionsSymbol]()
 
         moan
           .on('start', () => {

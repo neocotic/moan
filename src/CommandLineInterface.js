@@ -88,9 +88,11 @@ class CommandLineInterface {
     if (!this[loggedOptionsSymbol]) {
       this[loggedOptionsSymbol] = true
 
-      this[moanSymbol].log.debug(`color option: ${color}`)
-      this[moanSymbol].log.debug(`debug option: ${debug}`)
-      this[moanSymbol].log.debug(`force option: ${force}`)
+      this[moanSymbol].log
+        .debug('The following options have been used:')
+        .debug(`color: ${color}`)
+        .debug(`debug: ${debug}`)
+        .debug(`force: ${force}`)
     }
   }
 
@@ -163,6 +165,8 @@ class CommandLineInterface {
    * @access public
    */
   list() {
+    this[moanSymbol].log.debug('Logging available tasks for "list" option')
+
     if (this[moanSymbol].tasks.length) {
       this[moanSymbol].log.writeln('The following tasks are available:\n')
 
@@ -184,10 +188,14 @@ class CommandLineInterface {
    */
   load() {
     return new Promise((resolve, reject) => {
+      this[moanSymbol].log.debug('Trying to load Moaning file')
+
       let moaningFile = this[commandSymbol].file || findup('Moaning.js', { nocase: true })
       if (!moaningFile) {
         throw new Error(`Unable to find ${path.basename(moaningFile)} file`)
       }
+
+      this[moanSymbol].log.debug(`Found Moaning file: ${moaningFile}`)
 
       fs.stat(moaningFile, (error, stat) => {
         if (error) {
@@ -195,7 +203,14 @@ class CommandLineInterface {
         } else if (!stat.isFile()) {
           reject(`Not a valid file: ${moaningFile}`)
         } else {
-          process.chdir(path.dirname(moaningFile))
+          let moaningDirectory = path.dirname(moaningFile)
+
+          this[moanSymbol].log.debug(`Changing directory that which contains the Moaning file: ${moaningDirectory}`)
+
+          process.chdir(moaningDirectory)
+
+          this[moanSymbol].log.debug(`Loading Moaning file: ${moaningFile}`)
+
           require(path.resolve(moaningFile))
 
           resolve(moaningFile)
@@ -214,11 +229,17 @@ class CommandLineInterface {
    */
   [localSymbol]() {
     return new Promise((resolve) => {
-      resolveModule('moan', { basedir: process.cwd() }, (error, moan) => {
+      let cwd = process.cwd()
+
+      this[moanSymbol].log.debug(`Trying to resolve local "moan" module within directory: ${cwd}`)
+
+      resolveModule('moan', { basedir: cwd }, (error, moan) => {
         if (error) {
           this[moanSymbol].log.warn('Could not find local "moan" module so falling back to global module')
 
           moan = this[moanSymbol]
+        } else {
+          this[moanSymbol].log.debug(`Local "moan" module found: ${moan}`)
         }
 
         resolve(moan)

@@ -136,6 +136,8 @@ class Moan extends EventEmitter {
       return this[configsSymbol].get(key)
     }
 
+    this.log.debug(`Setting the configuration "${key}": ${value}`)
+
     this[configsSymbol].set(key, value)
 
     return value
@@ -213,6 +215,8 @@ class Moan extends EventEmitter {
     }
 
     let fileSet = new FileSet(patterns, options)
+
+    this.log.debug(`Registering file set with ID "${id}" for patterns: ${fileSet.patterns}`)
 
     this[fileSetsSymbol].set(id, fileSet)
 
@@ -312,6 +316,8 @@ class Moan extends EventEmitter {
     if (names.length === 0) {
       names.push('default')
     }
+
+    this.log.debug(`Running tasks: ${names}`)
 
     this[taskStackSymbol].splice(0, this[taskStackSymbol].length)
 
@@ -462,6 +468,8 @@ class Moan extends EventEmitter {
     }
 
     let task = new Task(name, dependencies, runnable)
+
+    this.log.debug(`Registering task for name "${name}"`)
 
     this[tasksSymbol].set(name, task)
 
